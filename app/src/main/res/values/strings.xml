@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">MobTrack</string>
+    <!-- Activity Accueil -->
+    <string name="message_accueil">Bienvenue sur notre application !</string>
+    <string name="connexion">Se connecter</string>
+    <string name="connexion2">Connexion</string>
+    <string name="login">Login...</string>
+    <string name="password">Mot de passe...</string>
+    <string name="pas_de_compte"><u>Se créer un compte</u></string>
+    <string name="anonyme"><u>Se connecter anonymement</u></string>
+
+    <!-- Activity Activation/suivie du tracking -->
+    <string name="bienvenue">Bienvenue</string>
+    <string name="accesCompte"><u>Acceder à son compte personnel</u></string>
+
+    <!-- Activity Création de compte -->
+    <string name="creation_compte">Création de compte</string>
+    <string name="password2">Confirmation mot de passe...</string>
+    <string name="mail">Adresse mail...</string>
+    <string name="ville">Ville...</string>
+    <string name="nouveau_compte">Creer votre compte</string>
+
+    <!-- Activity Compte personnel -->
+    <string name="titleCompte">Compte personnel</string>
+    <string name="accueilCompte">Bienvenue dans votre espace personnel</string>
+    <string name="editPassword"><u>Modifier votre mot de passe</u></string>
+    <string name="validerModification">Valider les modifications</string>
+    <string name="loginPers">Login:</string>
+    <string name="villePers">Ville:</string>
+    <string name="distanceParcourue">Distance totale parcourue:</string>
+
+    <!-- Message pour l'utilisateur -->
+    <string name="co_bd">Connexion à la Base de données...</string>
+    <string name="erreur_co_bd">Erreur lors de l\'envoi de vos données.\n Veuillez verifier la qualité de votre réseau</string>
+
+    <string name="co_util">Vérification de votre login et de votre mot de passe...</string>
+    <string name="erreur_co_util">Erreur lors de la vérification, veuillez verifier votre reéseau ainsi que les données saisies</string>
+
+</resources>

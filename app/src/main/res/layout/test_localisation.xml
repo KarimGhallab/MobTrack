@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.karim.test_osm.MainActivity">
+
+   <TextView
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:text="Teste d'affichage de a localisation"
+       android:id="@+id/textView" />
+
+    <TextView
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:text="Activer le Tracking"
+       android:layout_below="@+id/textView"
+       android:layout_marginTop="15sp"
+       android:id="@+id/activer" />
+
+
+   <Switch
+       android:showText="true"
+       android:splitTrack="true"
+       android:textOn="Oui"
+       android:textOff="Non"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:id="@+id/switch1"
+       android:layout_alignParentStart="true"
+       android:layout_below="@+id/activer" />
+
+    <TextView
+
+       android:text="Latitude :"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:id="@+id/latitude"
+       android:layout_below="@+id/switch1"
+       android:layout_alignParentStart="true"
+       android:layout_marginTop="20dp" />
+
+    <TextView
+        android:text=""
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/longitude"
+        android:layout_toEndOf="@+id/latitude"
+        android:id="@+id/zone_latitude" />
+
+    <TextView
+        android:text="Longitude :"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/longitude"
+        android:layout_below="@id/latitude"
+        android:layout_marginTop="10sp"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:text=""
+        android:layout_width="100sp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/latitude"
+        android:layout_marginTop="10sp"
+        android:layout_toEndOf="@id/longitude"
+        android:id="@+id/zone_longitude" />
+
+    <Button
+        android:text="Afficher ma position"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/boutonLoc"
+        android:layout_below="@+id/longitude"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="65dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/accesCompte"
+        android:textColor="@color/couleurLien"
+        android:layout_below="@+id/boutonLoc"
+        android:layout_marginTop="20dp"
+        android:id="@+id/textAccesCompte"/>
+
+</RelativeLayout>

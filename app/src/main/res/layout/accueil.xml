@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="22sp"
+        android:text="@string/message_accueil"/>
+
+    <TextView
+        android:layout_marginLeft="@dimen/decalage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/connexion"
+        android:layout_marginTop="25sp" />
+
+    <EditText
+        android:hint="@string/login"
+        android:layout_width="@dimen/widthEditText"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:id="@+id/login_connexion"/>
+
+    <EditText
+        android:hint="@string/password"
+        android:layout_width="@dimen/widthEditText"
+        android:layout_height="wrap_content"
+        android:inputType="textPassword"
+        android:layout_gravity="center"
+        android:id="@+id/mdp_connexion"/>
+
+    <Button
+        android:text="@string/connexion2"
+        android:layout_width="200sp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:id="@+id/bouton_connexion" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10sp"
+        android:text="@string/pas_de_compte"
+        android:id="@+id/pas_de_compte"
+        android:textColor="@color/couleurLien" />
+
+    <TextView
+        android:text="@string/anonyme"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10sp"
+        android:id="@+id/connexion_anonyme"
+        android:textColor="@color/couleurLien"/>
+
+
+</LinearLayout>

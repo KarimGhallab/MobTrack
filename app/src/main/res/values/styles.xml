@@ -1,0 +1,27 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="MyTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Style général -->
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:textColor">@color/couleurText</item>
+        <item name="colorButtonNormal">@color/couleurBouton</item>
+        <item name="android:textSize">16sp</item>
+        <!-- Action Bar & Status Bar -->
+        <item name="colorPrimary">@color/couleurBar</item>
+        <item name="colorPrimaryDark">@color/couleurUpperBar</item>
+        <!-- Autres données -->
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorControlNormal">#c5c5c5</item> <!-- ligne en dessous d'un EditText -->
+        <item name="colorControlActivated">@color/colorAccent</item> <!-- ligne en dessous d'un EditText qui à le focus -->
+        <item name="colorControlHighlight">#00b8e6</item> <!-- Effet d'un bouton cliqué -->
+    </style>
+
+</resources>

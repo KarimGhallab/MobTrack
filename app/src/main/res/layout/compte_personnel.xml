@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_marginLeft="@dimen/decalage"
+        android:text="@string/loginPers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/decalageHaut"
+        android:id="@+id/textLogin" />
+
+    <TextView
+        android:layout_marginLeft="@dimen/decalage"
+        android:text="@string/villePers"
+        android:layout_marginTop="@dimen/decalageHaut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textLogin"
+        android:id="@+id/textVille" />
+
+    <TextView
+        android:layout_marginLeft="@dimen/decalage"
+        android:text="@string/distanceParcourue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textVille"
+        android:layout_marginTop="@dimen/decalageHaut"
+        android:id="@+id/textDist" />
+
+    <TextView
+        android:text="@string/editPassword"
+        android:textColor="@color/couleurLien"
+        android:layout_marginLeft="@dimen/decalage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textDist"
+        android:layout_marginTop="@dimen/decalageHaut"
+        android:id="@+id/textUpdatePassword" />
+
+    <ImageButton
+        android:layout_width="@dimen/coteImage"
+        android:layout_height="@dimen/coteImage"
+        android:src="@drawable/picture_edit"
+        android:layout_toEndOf="@+id/textLogin"
+        android:layout_marginLeft="@dimen/decalage"
+        android:scaleType="fitXY"
+        android:background="@null"
+        android:id="@+id/imageButton1"/>
+
+    <ImageButton
+        android:layout_width="@dimen/coteImage"
+        android:layout_height="@dimen/coteImage"
+        android:src="@drawable/picture_edit"
+        android:background="@null"
+        android:layout_below="@+id/textLogin"
+        android:layout_toEndOf="@+id/textVille"
+        android:layout_marginLeft="@dimen/decalage"
+        android:scaleType="fitXY"
+        android:id="@+id/imageButton2"/>
+
+    <Button
+        android:text="@string/validerModification"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textUpdatePassword"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="@dimen/decalage"
+        android:id="@+id/button" />
+
+</RelativeLayout>

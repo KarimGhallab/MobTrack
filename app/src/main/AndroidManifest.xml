@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.karim.test_osm">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/MyTheme">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".ActivityLocalisation"
+            android:parentActivityName="com.example.karim.test_osm.MainActivity"
+            android:label="Localisation">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.karim.test_osm.MainActivity" />
+        </activity>
+
+        <activity android:name=".ActivityNouveauCompte"
+            android:parentActivityName="com.example.karim.test_osm.MainActivity"
+            android:label="@string/creation_compte">
+                <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="com.example.karim.test_osm.MainActivity" />
+        </activity>
+
+        <activity android:name=".ActivityCompteUtilisateur"
+            android:parentActivityName="com.example.karim.test_osm.ActivityLocalisation"
+            android:label="@string/titleCompte">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.karim.test_osm.ActivityLocalisation" />></activity>
+    </application>
+
+</manifest>

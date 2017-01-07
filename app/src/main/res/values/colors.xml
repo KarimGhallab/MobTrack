@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#f2f2f2</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#ff751a</color>
+    <color name="vertFonce">#009933</color>
+    <color name="background">#1F618D</color>
+    <color name="rouge">#ff0000</color>
+    <color name="couleurText">#ECF0F1</color>
+    <color name="couleurBouton">#909497</color>
+    <color name="couleurBar">#154360</color>
+    <color name="couleurUpperBar">#b3b3b3</color>
+    <color name="couleurLien">#B7950B</color>
+</resources>
