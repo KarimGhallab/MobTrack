@@ -95,6 +95,7 @@ public class ActivityNouveauCompte extends AppCompatActivity implements View.OnC
                     }
                 }
             }).start();
+            dialog.cancel();
         }
     }
 }
