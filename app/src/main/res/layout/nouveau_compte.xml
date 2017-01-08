@@ -4,54 +4,85 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:layout_width="@dimen/indication_zone_de_saisie"
+        android:layout_marginTop="@dimen/decalageHaut"
+        android:layout_height="wrap_content"
+        android:text="@string/login"
+        android:layout_marginLeft="@dimen/decalage"
+        android:id="@+id/textview_login"/>
+
     <EditText
         android:layout_width="200sp"
         android:layout_height="wrap_content"
         android:inputType="textPersonName"
         android:layout_marginLeft="@dimen/decalage"
-        android:hint="@string/login"
-        android:layout_alignParentTop="true"
+        android:hint="@string/hint_login"
+        android:layout_below="@+id/textview_login"
         android:layout_alignParentStart="true"
         android:id="@+id/zone_login" />
+
+    <TextView
+        android:layout_marginTop="@dimen/decalageHaut"
+        android:layout_width="@dimen/indication_zone_de_saisie"
+        android:layout_height="wrap_content"
+        android:text="@string/mdp"
+        android:layout_below="@+id/zone_login"
+        android:layout_marginLeft="@dimen/decalage"
+        android:id="@+id/textview_mdp"/>
 
     <EditText
         android:layout_width="@dimen/widthEditText"
         android:layout_height="wrap_content"
         android:inputType="textPassword"
         android:layout_marginLeft="@dimen/decalage"
-        android:hint="@string/password"
-        android:layout_below="@+id/zone_login"
-        android:layout_marginTop="@dimen/decalageHaut"
+        android:hint="@string/hint_password1"
+        android:layout_below="@+id/textview_mdp"
         android:id="@+id/zone_mdp1" />
 
     <EditText
-        android:layout_width="200sp"
+        android:layout_width="@dimen/widthEditText"
         android:layout_height="wrap_content"
         android:inputType="textPassword"
         android:layout_marginLeft="@dimen/decalage"
-        android:hint="@string/password2"
+        android:hint="@string/hint_password2"
         android:layout_below="@+id/zone_mdp1"
-        android:layout_marginTop="@dimen/decalageHaut"
         android:id="@+id/zone_mdp2" />
+
+    <TextView
+        android:layout_marginTop="@dimen/decalageHaut"
+        android:layout_width="@dimen/indication_zone_de_saisie"
+        android:layout_height="wrap_content"
+        android:text="@string/mail"
+        android:layout_below="@+id/zone_mdp2"
+        android:layout_marginLeft="@dimen/decalage"
+        android:id="@+id/textview_mail"/>
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textEmailAddress"
         android:layout_marginLeft="@dimen/decalage"
-        android:hint="@string/mail"
-        android:layout_below="@+id/zone_mdp2"
-        android:layout_marginTop="@dimen/decalageHaut"
+        android:hint="@string/hint_mail"
+        android:layout_below="@+id/textview_mail"
         android:id="@+id/zone_mail" />
+
+    <TextView
+        android:layout_marginTop="@dimen/decalageHaut"
+        android:layout_width="@dimen/indication_zone_de_saisie"
+        android:layout_height="wrap_content"
+        android:text="@string/ville"
+        android:layout_below="@+id/zone_mail"
+        android:layout_marginLeft="@dimen/decalage"
+        android:id="@+id/textview_ville"/>
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textPersonName"
-        android:hint="@string/ville"
+        android:hint="@string/hint_ville"
         android:layout_marginLeft="@dimen/decalage"
-        android:layout_below="@+id/zone_mail"
-        android:layout_marginTop="@dimen/decalageHaut"
+        android:layout_below="@+id/textview_ville"
         android:id="@+id/zone_ville" />
 
     <Button

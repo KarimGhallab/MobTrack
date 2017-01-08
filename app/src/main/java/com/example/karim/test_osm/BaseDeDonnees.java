@@ -83,12 +83,12 @@ public abstract class BaseDeDonnees
 	 * @param parMail Le mail de l'utilisateur.
 	 * @param parVille La ville de l'utilisateur.
 	 * @param  parIMEI L'IMEI de l'utilisateur.
-	 * @return 0 si l'insertion s'est bien d&roulée, 1 si il y à eu une erreur dans la connxion avec la base de données, ou -1 si le login exist déjà.
+	 * @return 0 si l'insertion s'est bien déroulée, 1 si il y à eu une erreur dans la connexion avec la base de données, ou 2 si le login existe déjà.
 	 */
     public static int insererUtilisateur(String parLogin, String parMdp, String parMail, String parVille, String parIMEI)
     {
 		if (BaseDeDonnees.loginExists(parLogin) == true)
-			return -1;
+			return 2;
 		else
 		{
 			String sql = "INSERT INTO utilisateur(pseudo, IMEI, pass, mail, ville) VALUES ('"+parLogin+"', '"+parIMEI+"', '"+parMdp+"', '"+parMail+"', '"+parVille+"');";
@@ -298,11 +298,10 @@ public abstract class BaseDeDonnees
 		try
 		{
 			String sql = "SELECT count(*) from utilisateur where pseudo = '"+parLogin+"';";
-			System.out.print(sql);
 			ResultSet rs = chStmt.executeQuery(sql);
 			rs.next();
 			int nbResultat = rs.getInt(1);
-			if (nbResultat >=1 )
+			if (nbResultat >= 1 )
 				return true;
 			else
 				return false;

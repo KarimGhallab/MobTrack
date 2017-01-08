@@ -20,14 +20,14 @@
         android:layout_marginTop="25sp" />
 
     <EditText
-        android:hint="@string/login"
+        android:hint="@string/hint_login"
         android:layout_width="@dimen/widthEditText"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:id="@+id/login_connexion"/>
 
     <EditText
-        android:hint="@string/password"
+        android:hint="@string/hint_password"
         android:layout_width="@dimen/widthEditText"
         android:layout_height="wrap_content"
         android:inputType="textPassword"

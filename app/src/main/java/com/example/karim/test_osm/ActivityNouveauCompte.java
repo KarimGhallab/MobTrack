@@ -9,6 +9,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -56,6 +57,9 @@ public class ActivityNouveauCompte extends AppCompatActivity implements View.OnC
     {
         if(v.getId() == boutonCreate.getId())
         {
+			final Toast messageTemporaire;	//message temporaire s'affichant en bas de l'ecran
+			AlertDialog.Builder message = new AlertDialog.Builder(ActivityNouveauCompte.this);	//message ne s'effancant que une fois l'action finie ou s'il y a une erreur
+
 			TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
 			final String IMEI = telephonyManager.getDeviceId();
 			final Activity myActivity = this;
@@ -65,37 +69,74 @@ public class ActivityNouveauCompte extends AppCompatActivity implements View.OnC
             final String ville = zoneVille.getText().toString();
             final String mail = zoneMail.getText().toString();
 
-            AlertDialog.Builder message_co_bd = new AlertDialog.Builder(ActivityNouveauCompte.this);
-            message_co_bd.setMessage(R.string.co_bd);
+			if ((IMEI.equals("")) || (login.equals("")) || (mdp1.equals("")) || (mdp2.equals("")) || (ville.equals("")) || (mail.equals("")))		//Au moins un champ vide
+			{
+				messageTemporaire = Toast.makeText(ActivityNouveauCompte.this, R.string.champs_pas_remplis, Toast.LENGTH_LONG);
+				messageTemporaire.show();
+			}
+			else if (mdp1.equals(mdp2) == false)	//mots de passe différents
+			{
+				messageTemporaire = Toast.makeText(ActivityNouveauCompte.this, R.string.mots_de_passe_ne_correspondent_pas, Toast.LENGTH_LONG);
+				messageTemporaire.show();
+			}
+			else if (mdp1.length() < 8)		//mot de passe trop courts
+			{
+				messageTemporaire = Toast.makeText(ActivityNouveauCompte.this, R.string.mot_de_passe_trop_court, Toast.LENGTH_LONG);
+				messageTemporaire.show();
+			}
+			else if ((Patterns.EMAIL_ADDRESS.matcher(mail).matches()) == false)//(mail.contains("@") == false)	//Mail non valide La fonction utilise une expression réguliere afin de vérifier si le mail est valide
+			{
+				messageTemporaire = Toast.makeText(ActivityNouveauCompte.this, R.string.mail_non_valide, Toast.LENGTH_LONG);
+				messageTemporaire.show();
+			}
+			else	//Il n'y a aucunes erreurs de saisies
+			{
+				message.setMessage(R.string.co_bd);
+				final AlertDialog dialog = message.create();
+				dialog.setCancelable(false);    //annule la suppresion de la boite de dialogue lors de retour ou d'un clique en dehord de la boite
+				dialog.show();      //ici la boite de dialogue s'affiche
 
-			final AlertDialog dialog = message_co_bd.create();
-            dialog.setCancelable(false);    //annule la suppresion de la boite de dialogue lors de retour ou d'un clique en dehord de la boite
-            dialog.show();      //ici la boite de dialogue s'affiche
-            new Thread(new Runnable()
-            {
-                public void run()
-                {
-                    try
-                    {
-                        BaseDeDonnees.connexionBD();
-                        BaseDeDonnees.insererUtilisateur(login, mdp1, mail, ville, IMEI);
-                    }
-                    catch (Exception exp)
-                    {
-                        Log.e("erreur connexion", exp.getMessage());
-                        myActivity.runOnUiThread(new Runnable()
-                        {
-                            public void run()
-                            {
-                                dialog.cancel();
-                                Toast message = Toast.makeText(ActivityNouveauCompte.this, R.string.erreur_co_bd, Toast.LENGTH_LONG);
-                                message.show();
-                            }
-                        });
-                    }
-                }
-            }).start();
-            dialog.cancel();
+            	new Thread(new Runnable()
+				{
+					public void run()
+					{
+						int codeErreur = 0;	//0: tous s'est bien déroulé, 1: erreur ed connexion avec la BD, 2 si le login est déjà présent dans la BD
+						boolean connexionBD = BaseDeDonnees.connexionBD();
+						if (connexionBD == true)
+							codeErreur = BaseDeDonnees.insererUtilisateur(login, mdp1, mail, ville, IMEI);
+						else	//erreur de co avec la BD
+							codeErreur = 1;
+						Log.d("Code erreur", " Avant UI: "+codeErreur);
+						myActivity.runOnUiThread(createRunnableForUI(codeErreur));
+					}
+
+					//Ici on gere l'affichage du message en fonction du code d'erreur recçu
+					private Runnable createRunnableForUI(final int parCodeErreur)
+					{
+						Log.d("Code erreur", "Pendant UI :"+parCodeErreur);
+						Runnable r = new Runnable()
+						{
+							Toast message;
+							public void run()
+							{
+								Log.d("Code erreur", "Dans le run :"+parCodeErreur);
+								switch (parCodeErreur)
+								{
+									case 0: message = Toast.makeText(ActivityNouveauCompte.this, R.string.bonne_insertion, Toast.LENGTH_LONG);
+										break;
+									case 1: message = Toast.makeText(ActivityNouveauCompte.this, R.string.erreur_co_bd, Toast.LENGTH_LONG);
+										break;
+									case 2: message = Toast.makeText(ActivityNouveauCompte.this, R.string.login_deja_present, Toast.LENGTH_LONG);
+										break;
+								}
+								dialog.cancel();
+								message.show();
+							}
+						};
+						return r;
+					}
+				}).start();
+			}
         }
     }
 }

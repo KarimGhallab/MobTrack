@@ -1,11 +1,16 @@
 <resources>
     <string name="app_name">MobTrack</string>
+    <string name="login">Login:</string>
+    <string name="mdp">Mot de passe:</string>
+    <string name="mail">Mail:</string>
+    <string name="ville">Ville:</string>
+
     <!-- Activity Accueil -->
     <string name="message_accueil">Bienvenue sur notre application !</string>
-    <string name="connexion">Se connecter</string>
+    <string name="connexion">Se connecter:</string>
     <string name="connexion2">Connexion</string>
-    <string name="login">Login...</string>
-    <string name="password">Mot de passe...</string>
+    <string name="hint_login">Votre login...</string>
+    <string name="hint_password">Votre mot de passe...</string>
     <string name="pas_de_compte"><u>Se créer un compte</u></string>
     <string name="anonyme"><u>Se connecter anonymement</u></string>
 
@@ -15,9 +20,10 @@
 
     <!-- Activity Création de compte -->
     <string name="creation_compte">Création de compte</string>
-    <string name="password2">Confirmation mot de passe...</string>
-    <string name="mail">Adresse mail...</string>
-    <string name="ville">Ville...</string>
+    <string name="hint_password1">Au moins 8 caractères...</string>
+    <string name="hint_password2">Confirmation...</string>
+    <string name="hint_mail">Votre adresse mail...</string>
+    <string name="hint_ville">Votre ville...</string>
     <string name="nouveau_compte">Creer votre compte</string>
 
     <!-- Activity Compte personnel -->
@@ -25,15 +31,23 @@
     <string name="accueilCompte">Bienvenue dans votre espace personnel</string>
     <string name="editPassword"><u>Modifier votre mot de passe</u></string>
     <string name="validerModification">Valider les modifications</string>
-    <string name="loginPers">Login:</string>
-    <string name="villePers">Ville:</string>
     <string name="distanceParcourue">Distance totale parcourue:</string>
 
     <!-- Message pour l'utilisateur -->
-    <string name="co_bd">Connexion à la Base de données...</string>
+    <string name="co_bd">Connexion à la base de données...</string>
     <string name="erreur_co_bd">Erreur lors de l\'envoi de vos données.\n Veuillez verifier la qualité de votre réseau</string>
+    <string name="bonne_insertion">Vos données utilisateurs ont été créées ! :)</string>
 
-    <string name="co_util">Vérification de votre login et de votre mot de passe...</string>
-    <string name="erreur_co_util">Erreur lors de la vérification, veuillez verifier votre reéseau ainsi que les données saisies</string>
+        <!-- Verification du login et du mot de passe -->
+        <string name="co_util">Vérification de votre login et de votre mot de passe...</string>
+        <string name="erreur_co_util">Erreur lors de la vérification, veuillez verifier votre réseau ainsi que les données saisies</string>
+
+        <!--Verrification de la conformité des données saisies lors de la création du compte -->
+        <string name="champs_pas_remplis">Tous les champs ne sont pas remplis</string>
+        <string name="mots_de_passe_ne_correspondent_pas">Les deux mots de passes ne correspondent pas</string>
+        <string name="mot_de_passe_trop_court">Le mot de passe saisi est trop court, votre mot de passe doit contenir au moins 8 caractères</string>
+        <string name="mail_non_valide">Le mail saisi n\'est pas valide</string>
+
+        <string name="login_deja_present">Lo login que vous avez saisie existe déjà... :(</string>
 
 </resources>

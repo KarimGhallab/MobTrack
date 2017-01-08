@@ -77,7 +77,7 @@ public class TestUnitaireBaseDeDonnees
 		//Test2: le Login est dejà présent dans la BD
 		login = "florian";
 		res1 = BaseDeDonnees.insererUtilisateur(login, mdp, mail, ville, IMEI);
-		assertTrue(res1 == -1);
+		assertTrue(res1 == 2);
 	}
 
 	@Test
@@ -96,5 +96,19 @@ public class TestUnitaireBaseDeDonnees
 		res = BaseDeDonnees.modifierLogin(loginActuel, nouveauLogin);
 		nouveauLoginApresInsertion = BaseDeDonnees.getLogin(idUser);
 		assertFalse(res && (nouveauLoginApresInsertion == nouveauLogin));
+	}
+
+	@Test
+	public void loginExist_isCorrect()
+	{
+		//Le login existe
+		BaseDeDonnees.connexionBD();
+		String login = "florian";
+		assertTrue(BaseDeDonnees.loginExists(login) == true);
+
+		//le login n'existe pas
+		login = "adibou";
+		assertTrue(!BaseDeDonnees.loginExists(login) == true);
+
 	}
 }
