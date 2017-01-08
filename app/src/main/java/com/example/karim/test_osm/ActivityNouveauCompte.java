@@ -100,31 +100,42 @@ public class ActivityNouveauCompte extends AppCompatActivity implements View.OnC
 				{
 					public void run()
 					{
-						final int codeErreur;	//0: tous s'est bien déroulé, 1: erreur ed connexion avec la BD, 2 si le login est déjà présent dans la BD
+						int codeErreur = 0;	//0: tous s'est bien déroulé, 1: erreur ed connexion avec la BD, 2 si le login est déjà présent dans la BD
 						boolean connexionBD = BaseDeDonnees.connexionBD();
 						if (connexionBD == true)
 							codeErreur = BaseDeDonnees.insererUtilisateur(login, mdp1, mail, ville, IMEI);
 						else	//erreur de co avec la BD
 							codeErreur = 1;
-						myActivity.runOnUiThread(new Runnable()
+						Log.d("Code erreur", " Avant UI: "+codeErreur);
+						myActivity.runOnUiThread(createRunnableForUI(codeErreur));
+					}
+
+					//Ici on gere l'affichage du message en fonction du code d'erreur recçu
+					private Runnable createRunnableForUI(final int parCodeErreur)
+					{
+						Log.d("Code erreur", "Pendant UI :"+parCodeErreur);
+						Runnable r = new Runnable()
 						{
 							Toast message;
 							public void run()
 							{
-								dialog.cancel();
-								switch (codeErreur)
+								Log.d("Code erreur", "Dans le run :"+parCodeErreur);
+								switch (parCodeErreur)
 								{
 									case 0: message = Toast.makeText(ActivityNouveauCompte.this, R.string.bonne_insertion, Toast.LENGTH_LONG);
+										break;
 									case 1: message = Toast.makeText(ActivityNouveauCompte.this, R.string.erreur_co_bd, Toast.LENGTH_LONG);
+										break;
 									case 2: message = Toast.makeText(ActivityNouveauCompte.this, R.string.login_deja_present, Toast.LENGTH_LONG);
+										break;
 								}
-								System.out.print("Login saisi: "+login+"\ncodeErreur: "+codeErreur);
+								dialog.cancel();
 								message.show();
 							}
-						});
+						};
+						return r;
 					}
 				}).start();
-				dialog.cancel();
 			}
         }
     }

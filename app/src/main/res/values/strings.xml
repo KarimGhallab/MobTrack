@@ -34,7 +34,7 @@
     <string name="distanceParcourue">Distance totale parcourue:</string>
 
     <!-- Message pour l'utilisateur -->
-    <string name="co_bd">Connexion à la Base de données...</string>
+    <string name="co_bd">Connexion à la base de données...</string>
     <string name="erreur_co_bd">Erreur lors de l\'envoi de vos données.\n Veuillez verifier la qualité de votre réseau</string>
     <string name="bonne_insertion">Vos données utilisateurs ont été créées ! :)</string>
 
