@@ -6,7 +6,7 @@
 
     <TextView
         android:layout_marginLeft="@dimen/decalage"
-        android:text="@string/loginPers"
+        android:text="@string/login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/decalageHaut"
@@ -14,7 +14,7 @@
 
     <TextView
         android:layout_marginLeft="@dimen/decalage"
-        android:text="@string/villePers"
+        android:text="@string/ville"
         android:layout_marginTop="@dimen/decalageHaut"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
