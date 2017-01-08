@@ -36,6 +36,7 @@
     <!-- Message pour l'utilisateur -->
     <string name="co_bd">Connexion à la Base de données...</string>
     <string name="erreur_co_bd">Erreur lors de l\'envoi de vos données.\n Veuillez verifier la qualité de votre réseau</string>
+    <string name="bonne_insertion">Vos données utilisateurs ont été créées ! :)</string>
 
         <!-- Verification du login et du mot de passe -->
         <string name="co_util">Vérification de votre login et de votre mot de passe...</string>
@@ -46,5 +47,7 @@
         <string name="mots_de_passe_ne_correspondent_pas">Les deux mots de passes ne correspondent pas</string>
         <string name="mot_de_passe_trop_court">Le mot de passe saisi est trop court, votre mot de passe doit contenir au moins 8 caractères</string>
         <string name="mail_non_valide">Le mail saisi n\'est pas valide</string>
+
+        <string name="login_deja_present">Lo login que vous avez saisie existe déjà... :(</string>
 
 </resources>

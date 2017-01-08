@@ -57,7 +57,7 @@ public class ActivityNouveauCompte extends AppCompatActivity implements View.OnC
     {
         if(v.getId() == boutonCreate.getId())
         {
-			Toast messageTemporaire;	//message temporaire s'affichant en bas de l'ecran
+			final Toast messageTemporaire;	//message temporaire s'affichant en bas de l'ecran
 			AlertDialog.Builder message = new AlertDialog.Builder(ActivityNouveauCompte.this);	//message ne s'effancant que une fois l'action finie ou s'il y a une erreur
 
 			TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
@@ -95,28 +95,33 @@ public class ActivityNouveauCompte extends AppCompatActivity implements View.OnC
 				final AlertDialog dialog = message.create();
 				dialog.setCancelable(false);    //annule la suppresion de la boite de dialogue lors de retour ou d'un clique en dehord de la boite
 				dialog.show();      //ici la boite de dialogue s'affiche
+
             	new Thread(new Runnable()
 				{
 					public void run()
 					{
-						try
+						final int codeErreur;	//0: tous s'est bien déroulé, 1: erreur ed connexion avec la BD, 2 si le login est déjà présent dans la BD
+						boolean connexionBD = BaseDeDonnees.connexionBD();
+						if (connexionBD == true)
+							codeErreur = BaseDeDonnees.insererUtilisateur(login, mdp1, mail, ville, IMEI);
+						else	//erreur de co avec la BD
+							codeErreur = 1;
+						myActivity.runOnUiThread(new Runnable()
 						{
-							BaseDeDonnees.connexionBD();
-							BaseDeDonnees.insererUtilisateur(login, mdp1, mail, ville, IMEI);
-						}
-						catch (Exception exp)
-						{
-							Log.e("erreur connexion", exp.getMessage());
-							myActivity.runOnUiThread(new Runnable()
+							Toast message;
+							public void run()
 							{
-								public void run()
+								dialog.cancel();
+								switch (codeErreur)
 								{
-									dialog.cancel();
-									Toast message = Toast.makeText(ActivityNouveauCompte.this, R.string.erreur_co_bd, Toast.LENGTH_LONG);
-									message.show();
+									case 0: message = Toast.makeText(ActivityNouveauCompte.this, R.string.bonne_insertion, Toast.LENGTH_LONG);
+									case 1: message = Toast.makeText(ActivityNouveauCompte.this, R.string.erreur_co_bd, Toast.LENGTH_LONG);
+									case 2: message = Toast.makeText(ActivityNouveauCompte.this, R.string.login_deja_present, Toast.LENGTH_LONG);
 								}
-							});
-						}
+								System.out.print("Login saisi: "+login+"\ncodeErreur: "+codeErreur);
+								message.show();
+							}
+						});
 					}
 				}).start();
 				dialog.cancel();
