@@ -3,6 +3,7 @@ package com.example.karim.test_osm;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -17,7 +18,14 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.util.GeoPoint;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 /**
  * Classe ActivityLocalisation, elle classe représente une activty de notre application dans laquelle l'utilisateur peut demander
@@ -30,9 +38,11 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
     private Switch chSwitch;
     private TextView zone_longitude, zone_latitude, zone_acces_compte;
     private Location location;
-    private GeoPoint currentLocation;
+	private GeoPoint currentLocation;
     private LocationManager locationManager;
     private Button boutonLoc;
+	private String filename = "file.txt";
+	private File fichier;
 
 	/**
 	 * Méthode de création de l'activity.
@@ -40,8 +50,8 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	 */
     protected void onCreate(Bundle savedInstanceState)
     {
-		Utilisateur util = getIntent().getParcelableExtra("Utilisateur");
-		System.out.println("Je suis dans localisation: "+util);
+		com.example.karim.test_osm.Utilisateur util = getIntent().getParcelableExtra("Utilisateur");
+		Log.i("util", util.toString());
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.test_localisation);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -60,29 +70,7 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
         /* localisation */
         //getSystemService permet l'obtention des ressources GPS du systeme
         locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-
-        //verification de la permission d'accès aux données GPS
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-        {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, this);
-            Log.d("yuyu", "Autorisation accordée !");
-        }
-        /* fin localisation */
     }
-
-    //je sais pas à quoi ca sert 0.0
-    /*public boolean onOptionsItemSelected(MenuItem item)
-    {
-        Log.d("yo", "je suis ici");
-        switch (item.getItemId())
-        {
-            // Respond to the action bar's Up/Home button
-            case android.R.id.home:
-                NavUtils.navigateUpFromSameTask(this);
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }*/
 
 	/**
 	 * Méthode de gestion des cliques utilisateurs. Elle permet de gérer la demande de redirection vers l'activity du compte personnel de l'utilisateur.
@@ -95,17 +83,16 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
             Intent intent = new Intent(this, ActivityCompteUtilisateur.class);
             startActivity(intent);
         }
-        if (v.getId() == R.id.boutonLoc)
+        if ((v.getId() == R.id.boutonLoc) && (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED))
         {
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-            {
-                if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
-                    location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                locationManager.removeUpdates(this);
-                currentLocation = new GeoPoint(location);
-                zone_latitude.setText(""+currentLocation.getLatitude());
-                zone_longitude.setText(""+currentLocation.getLongitude());
-            }
+			//test d'obtention d'une ancienne donnée GPS
+			location = locationManager.getLastKnownLocation(locationManager.getBestProvider(new Criteria(), true));
+			if (location != null)
+			{
+				currentLocation = new GeoPoint(location);
+				zone_latitude.setText(""+currentLocation.getLatitude());
+				zone_longitude.setText(""+currentLocation.getLongitude());
+			}
         }
     }
 
@@ -116,10 +103,40 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	 */
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
     {
-        if(isChecked)
-            Log.d("oui", "Tracking activé");
+        Toast messageTemporaire;
+		String message;
+		if(isChecked)
+		{
+			//verification de la permission d'accès aux données GPS
+			if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+			{
+				Log.d("recupération", "Récupération des données, chemin: "+this.getFilesDir());
+				fichier = new File(this.getFilesDir(), filename);
+
+				String provider = locationManager.getBestProvider(new Criteria(), true);
+				if (provider == null)	//On ne peut pas relever les coordonnées GPS
+				{
+					message = "Il est impossible de relever les coordonées GPS, Veuiller activer votre GPS";
+				}
+				else	//On peut relever les coordonnées GPS
+				{
+					message = "Activation du tracking";
+					locationManager.requestLocationUpdates(provider, 0, 0, this);
+				}
+			}
+			else
+			{
+				message = "L'application n'a pas l'autorisation d'accèder au GPS de votre appareil";
+				Log.e("erreur", "Impossiblité de récupérer les données");
+			}
+		}
         else
-            Log.d("non", "Tracking non-activé");
+		{
+			message = "Désactivation du tracking";
+			locationManager.removeUpdates(this);
+		}
+		messageTemporaire = Toast.makeText(ActivityLocalisation.this, message, Toast.LENGTH_SHORT);
+		messageTemporaire.show();
     }
 
 	/**
@@ -128,7 +145,19 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	 */
 	public void onLocationChanged(Location location)
     {
-        Log.d("Nouvelle Localisation", "Latitude :"+location.getLatitude()+" Longitude :"+location.getLongitude());
+		GeoPoint position = new GeoPoint(location);
+		String text = "Latitude :"+position.getLatitude()+" Longitude :"+position.getLongitude();
+		FileOutputStream output;
+		try
+		{
+			output = openFileOutput(filename, Context.MODE_PRIVATE);
+			output.write(text.getBytes());
+		}
+		catch(Exception e)
+		{
+			Log.e("Error", e.getMessage());
+		}
+		Log.d("Nouvelle Localisation", text);
     }
 
 	/**
@@ -155,11 +184,15 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
     {}
 
 	/**
-	 * Méthode d'obtention du provider GPS le plus efficasse.
+	 * Méthode d'obtention du provider GPS le plus efficace.
 	 * @return Le provider GPS le plus efficace.
 	 */
 	public String getBetterProvider()
 	{
+		if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+			return LocationManager.GPS_PROVIDER;
+		else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+			return LocationManager.NETWORK_PROVIDER;
 		return null;
 	}
 }
