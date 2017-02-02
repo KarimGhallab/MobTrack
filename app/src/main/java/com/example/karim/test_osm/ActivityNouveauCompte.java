@@ -84,7 +84,7 @@ public class ActivityNouveauCompte extends AppCompatActivity implements View.OnC
 				messageTemporaire = Toast.makeText(ActivityNouveauCompte.this, R.string.mot_de_passe_trop_court, Toast.LENGTH_LONG);
 				messageTemporaire.show();
 			}
-			else if ((Patterns.EMAIL_ADDRESS.matcher(mail).matches()) == false)//(mail.contains("@") == false)	//Mail non valide La fonction utilise une expression réguliere afin de vérifier si le mail est valide
+			else if ((Patterns.EMAIL_ADDRESS.matcher(mail).matches()) == false)	//Mail non valide La fonction utilise une expression réguliere afin de vérifier si le mail est valide
 			{
 				messageTemporaire = Toast.makeText(ActivityNouveauCompte.this, R.string.mail_non_valide, Toast.LENGTH_LONG);
 				messageTemporaire.show();

@@ -3,6 +3,7 @@ package com.example.karim.test_osm;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -17,7 +18,19 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+
+import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.util.GeoPoint;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 /**
  * Classe ActivityLocalisation, elle classe représente une activty de notre application dans laquelle l'utilisateur peut demander
@@ -25,14 +38,18 @@ import org.osmdroid.util.GeoPoint;
  * Elle permet aussi d'afficher certaines information sur le trajet en cours.
  */
 
-public class ActivityLocalisation extends AppCompatActivity implements View.OnClickListener, LocationListener, CompoundButton.OnCheckedChangeListener
+public class ActivityLocalisation extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, CompoundButton.OnCheckedChangeListener, com.google.android.gms.location.LocationListener
 {
     private Switch chSwitch;
     private TextView zone_longitude, zone_latitude, zone_acces_compte;
     private Location location;
-    private GeoPoint currentLocation;
-    private LocationManager locationManager;
+	private GeoPoint currentLocation;
     private Button boutonLoc;
+	private String filename = "file.txt";
+	private File fichier;
+	private GoogleApiClient googleApiClient;
+	private LocationRequest locationRequest;
+
 
 	/**
 	 * Méthode de création de l'activity.
@@ -40,49 +57,27 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	 */
     protected void onCreate(Bundle savedInstanceState)
     {
-		Utilisateur util = getIntent().getParcelableExtra("Utilisateur");
-		System.out.println("Je suis dans localisation: "+util);
+		com.example.karim.test_osm.Utilisateur util = getIntent().getParcelableExtra("Utilisateur");
+		Log.i("util", util.toString());
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.test_localisation);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        /* recuperation des widgets */
+        /* Récuperation des widgets */
         chSwitch = (Switch) findViewById(R.id.switch1);
         zone_latitude = (TextView) findViewById(R.id.zone_latitude);
         zone_longitude = (TextView) findViewById(R.id.zone_longitude);
         zone_acces_compte = (TextView) findViewById(R.id.textAccesCompte);
         boutonLoc = (Button) findViewById(R.id.boutonLoc);
 
+		/* Ajout des listener aux widgets */
         chSwitch.setOnCheckedChangeListener(this);
         zone_acces_compte.setOnClickListener(this);
         boutonLoc.setOnClickListener(this);
 
-        /* localisation */
-        //getSystemService permet l'obtention des ressources GPS du systeme
-        locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-
-        //verification de la permission d'accès aux données GPS
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-        {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, this);
-            Log.d("yuyu", "Autorisation accordée !");
-        }
-        /* fin localisation */
+		//Création d'une instance de GoogleApiClient
+		buildGoogleApiClient();
     }
-
-    //je sais pas à quoi ca sert 0.0
-    /*public boolean onOptionsItemSelected(MenuItem item)
-    {
-        Log.d("yo", "je suis ici");
-        switch (item.getItemId())
-        {
-            // Respond to the action bar's Up/Home button
-            case android.R.id.home:
-                NavUtils.navigateUpFromSameTask(this);
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }*/
 
 	/**
 	 * Méthode de gestion des cliques utilisateurs. Elle permet de gérer la demande de redirection vers l'activity du compte personnel de l'utilisateur.
@@ -90,22 +85,19 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	 */
     public void onClick(View v)
     {
-        if (v.getId() == zone_acces_compte.getId())
+        if (v.getId() == zone_acces_compte.getId())		//L'utilisateur souhaite accèder à son compte
         {
             Intent intent = new Intent(this, ActivityCompteUtilisateur.class);
             startActivity(intent);
         }
-        if (v.getId() == R.id.boutonLoc)
+        if ((v.getId() == R.id.boutonLoc) && (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED))
         {
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-            {
-                if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
-                    location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                locationManager.removeUpdates(this);
-                currentLocation = new GeoPoint(location);
-                zone_latitude.setText(""+currentLocation.getLatitude());
-                zone_longitude.setText(""+currentLocation.getLongitude());
-            }
+			if (location != null)
+			{
+				currentLocation = new GeoPoint(location);
+				zone_latitude.setText(""+currentLocation.getLatitude());
+				zone_longitude.setText(""+currentLocation.getLongitude());
+			}
         }
     }
 
@@ -116,10 +108,35 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	 */
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
     {
-        if(isChecked)
-            Log.d("oui", "Tracking activé");
+        Toast messageTemporaire;
+		String message;
+		if(isChecked)
+		{
+			//verification de la permission d'accès aux données GPS
+			if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+			{
+				message = "Activation du tracking";
+				fichier = new File(this.getFilesDir(), filename);
+				/*
+		   			Connection du téléphone au Google Play Services
+		   			En cas de succès, la méthode onConnected() est appelée
+		   			Dans le cas contraire la méthode onConnectionFailed est appelée
+		 		*/
+				googleApiClient.connect();
+			}
+			else
+			{
+				message = "L'application n'a pas l'autorisation d'accèder au GPS de votre appareil";
+				Log.e("erreur", "Impossiblité de récupérer les données");
+			}
+		}
         else
-            Log.d("non", "Tracking non-activé");
+		{
+			message = "Désactivation du tracking";
+			googleApiClient.disconnect();
+		}
+		messageTemporaire = Toast.makeText(ActivityLocalisation.this, message, Toast.LENGTH_SHORT);
+		messageTemporaire.show();
     }
 
 	/**
@@ -128,38 +145,65 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	 */
 	public void onLocationChanged(Location location)
     {
-        Log.d("Nouvelle Localisation", "Latitude :"+location.getLatitude()+" Longitude :"+location.getLongitude());
+		GeoPoint position = new GeoPoint(location);
+		String text = "Latitude :"+position.getLatitude()+" Longitude :"+position.getLongitude();
+		FileOutputStream output;
+		try		//ecriture dans le fichier
+		{
+			output = openFileOutput(filename, Context.MODE_PRIVATE);
+			output.write(text.getBytes());
+		}
+		catch(Exception e)
+		{
+			Log.e("Error", e.getMessage());
+		}
+		Log.d("Nouvelle Localisation", text);
     }
 
-	/**
-	 * Méthode afin de gérer les changements d'état du provider des données GPS.
-	 * @param provider Le provider fournissant les données GPS.
-	 * @param status Le nouveau status du provider.
-	 * @param extras Des données supplementaires sur le provider.
-	 */
-    public void onStatusChanged(String provider, int status, Bundle extras)
-    {}
-
-	/**
-	 * Méthode s'activant si le provider est activé par l'utilisateur.
-	 * @param provider Nom du provider GPS.
-	 */
-    public void onProviderEnabled(String provider)
-    {}
-
-	/**
-	 * Méthode s'activant si le provider est désactivé par l'utilisateur.
-	 * @param provider Nom du provider GPS.
-	 */
-    public void onProviderDisabled(String provider)
-    {}
-
-	/**
-	 * Méthode d'obtention du provider GPS le plus efficasse.
-	 * @return Le provider GPS le plus efficace.
-	 */
-	public String getBetterProvider()
+	@Override
+	public void onConnected(Bundle bundle)
 	{
-		return null;
+		locationRequest = LocationRequest.create();
+		locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+		locationRequest.setInterval(10000); // Update location every second
+
+		LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);		//Demande de reception régulière de données GPS
+
+		location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+		if (location != null)
+		{
+			currentLocation = new GeoPoint(location);
+			String text = "Latitude :"+currentLocation.getLatitude()+" Longitude :"+currentLocation.getLongitude();
+			Log.d("1er loc", text);
+		}
+	}
+
+	public void onConnectionSuspended(int i)
+	{
+
+	}
+
+	public void onConnectionFailed(ConnectionResult connectionResult)
+	{
+
+	}
+
+	/**
+	 * Méthode de construction d'un objet de la classe GoogleApiClient
+	 */
+	synchronized void buildGoogleApiClient()
+	{
+		googleApiClient = new GoogleApiClient.Builder(this)
+				.addConnectionCallbacks(this)
+				.addOnConnectionFailedListener(this)
+				.addApi(LocationServices.API)
+				.build();
+	}
+
+	@Override
+	protected void onDestroy()
+	{
+		super.onDestroy();
+		googleApiClient.disconnect();
 	}
 }
