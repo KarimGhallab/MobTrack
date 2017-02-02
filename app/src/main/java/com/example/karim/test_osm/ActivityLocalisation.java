@@ -20,6 +20,11 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.util.GeoPoint;
 
@@ -33,16 +38,18 @@ import java.io.FileOutputStream;
  * Elle permet aussi d'afficher certaines information sur le trajet en cours.
  */
 
-public class ActivityLocalisation extends AppCompatActivity implements View.OnClickListener, LocationListener, CompoundButton.OnCheckedChangeListener
+public class ActivityLocalisation extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, CompoundButton.OnCheckedChangeListener, com.google.android.gms.location.LocationListener
 {
     private Switch chSwitch;
     private TextView zone_longitude, zone_latitude, zone_acces_compte;
     private Location location;
 	private GeoPoint currentLocation;
-    private LocationManager locationManager;
     private Button boutonLoc;
 	private String filename = "file.txt";
 	private File fichier;
+	private GoogleApiClient googleApiClient;
+	private LocationRequest locationRequest;
+
 
 	/**
 	 * Méthode de création de l'activity.
@@ -56,20 +63,20 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
         super.setContentView(R.layout.test_localisation);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        /* recuperation des widgets */
+        /* Récuperation des widgets */
         chSwitch = (Switch) findViewById(R.id.switch1);
         zone_latitude = (TextView) findViewById(R.id.zone_latitude);
         zone_longitude = (TextView) findViewById(R.id.zone_longitude);
         zone_acces_compte = (TextView) findViewById(R.id.textAccesCompte);
         boutonLoc = (Button) findViewById(R.id.boutonLoc);
 
+		/* Ajout des listener aux widgets */
         chSwitch.setOnCheckedChangeListener(this);
         zone_acces_compte.setOnClickListener(this);
         boutonLoc.setOnClickListener(this);
 
-        /* localisation */
-        //getSystemService permet l'obtention des ressources GPS du systeme
-        locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+		//Création d'une instance de GoogleApiClient
+		buildGoogleApiClient();
     }
 
 	/**
@@ -78,15 +85,13 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	 */
     public void onClick(View v)
     {
-        if (v.getId() == zone_acces_compte.getId())
+        if (v.getId() == zone_acces_compte.getId())		//L'utilisateur souhaite accèder à son compte
         {
             Intent intent = new Intent(this, ActivityCompteUtilisateur.class);
             startActivity(intent);
         }
         if ((v.getId() == R.id.boutonLoc) && (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED))
         {
-			//test d'obtention d'une ancienne donnée GPS
-			location = locationManager.getLastKnownLocation(locationManager.getBestProvider(new Criteria(), true));
 			if (location != null)
 			{
 				currentLocation = new GeoPoint(location);
@@ -110,19 +115,14 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 			//verification de la permission d'accès aux données GPS
 			if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
 			{
-				Log.d("recupération", "Récupération des données, chemin: "+this.getFilesDir());
+				message = "Activation du tracking";
 				fichier = new File(this.getFilesDir(), filename);
-
-				String provider = locationManager.getBestProvider(new Criteria(), true);
-				if (provider == null)	//On ne peut pas relever les coordonnées GPS
-				{
-					message = "Il est impossible de relever les coordonées GPS, Veuiller activer votre GPS";
-				}
-				else	//On peut relever les coordonnées GPS
-				{
-					message = "Activation du tracking";
-					locationManager.requestLocationUpdates(provider, 0, 0, this);
-				}
+				/*
+		   			Connection du téléphone au Google Play Services
+		   			En cas de succès, la méthode onConnected() est appelée
+		   			Dans le cas contraire la méthode onConnectionFailed est appelée
+		 		*/
+				googleApiClient.connect();
 			}
 			else
 			{
@@ -133,7 +133,7 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
         else
 		{
 			message = "Désactivation du tracking";
-			locationManager.removeUpdates(this);
+			googleApiClient.disconnect();
 		}
 		messageTemporaire = Toast.makeText(ActivityLocalisation.this, message, Toast.LENGTH_SHORT);
 		messageTemporaire.show();
@@ -148,7 +148,7 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 		GeoPoint position = new GeoPoint(location);
 		String text = "Latitude :"+position.getLatitude()+" Longitude :"+position.getLongitude();
 		FileOutputStream output;
-		try
+		try		//ecriture dans le fichier
 		{
 			output = openFileOutput(filename, Context.MODE_PRIVATE);
 			output.write(text.getBytes());
@@ -160,39 +160,50 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 		Log.d("Nouvelle Localisation", text);
     }
 
-	/**
-	 * Méthode afin de gérer les changements d'état du provider des données GPS.
-	 * @param provider Le provider fournissant les données GPS.
-	 * @param status Le nouveau status du provider.
-	 * @param extras Des données supplementaires sur le provider.
-	 */
-    public void onStatusChanged(String provider, int status, Bundle extras)
-    {}
-
-	/**
-	 * Méthode s'activant si le provider est activé par l'utilisateur.
-	 * @param provider Nom du provider GPS.
-	 */
-    public void onProviderEnabled(String provider)
-    {}
-
-	/**
-	 * Méthode s'activant si le provider est désactivé par l'utilisateur.
-	 * @param provider Nom du provider GPS.
-	 */
-    public void onProviderDisabled(String provider)
-    {}
-
-	/**
-	 * Méthode d'obtention du provider GPS le plus efficace.
-	 * @return Le provider GPS le plus efficace.
-	 */
-	public String getBetterProvider()
+	@Override
+	public void onConnected(Bundle bundle)
 	{
-		if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
-			return LocationManager.GPS_PROVIDER;
-		else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
-			return LocationManager.NETWORK_PROVIDER;
-		return null;
+		locationRequest = LocationRequest.create();
+		locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+		locationRequest.setInterval(10000); // Update location every second
+
+		LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);		//Demande de reception régulière de données GPS
+
+		location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+		if (location != null)
+		{
+			currentLocation = new GeoPoint(location);
+			String text = "Latitude :"+currentLocation.getLatitude()+" Longitude :"+currentLocation.getLongitude();
+			Log.d("1er loc", text);
+		}
+	}
+
+	public void onConnectionSuspended(int i)
+	{
+
+	}
+
+	public void onConnectionFailed(ConnectionResult connectionResult)
+	{
+
+	}
+
+	/**
+	 * Méthode de construction d'un objet de la classe GoogleApiClient
+	 */
+	synchronized void buildGoogleApiClient()
+	{
+		googleApiClient = new GoogleApiClient.Builder(this)
+				.addConnectionCallbacks(this)
+				.addOnConnectionFailedListener(this)
+				.addApi(LocationServices.API)
+				.build();
+	}
+
+	@Override
+	protected void onDestroy()
+	{
+		super.onDestroy();
+		googleApiClient.disconnect();
 	}
 }
