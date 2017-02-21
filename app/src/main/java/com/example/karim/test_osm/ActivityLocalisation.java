@@ -48,9 +48,17 @@ import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -60,12 +68,14 @@ import java.util.Map;
  * Elle permet aussi d'afficher certaines information sur le trajet en cours.
  */
 
-public class ActivityLocalisation extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, CompoundButton.OnCheckedChangeListener, com.google.android.gms.location.LocationListener, ItemizedIconOverlay.OnItemGestureListener
+public class ActivityLocalisation extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener, ItemizedIconOverlay.OnItemGestureListener
 {
-    private Switch chSwitch;
+    //private Switch chSwitch;
+	private Button trackMe, untrackMe;
     private TextView zone_acces_compte;
 	private String chNomFichier = "position.txt";
 	private File chFichier;
+	private FileOutputStream chOutput;
 	private GoogleApiClient chGoogleApiClient;
 	private LocationRequest chLocationRequest;
 	private MapView chMap;
@@ -75,6 +85,7 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	private ImageButton chZoomIn, chZoomOut;
 	private ArrayList<GeoPoint> chPoints;
 	private RoadManager roadManager;
+	private boolean tracking = false;
 
 
 	/**
@@ -92,7 +103,9 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         /* Récuperation des widgets */
-        chSwitch = (Switch) findViewById(R.id.switch1);
+        //chSwitch = (Switch) findViewById(R.id.switch1);
+		trackMe = (Button) findViewById(R.id.track_me);
+		untrackMe = (Button) findViewById(R.id.untrack_me);
         zone_acces_compte = (TextView) findViewById(R.id.textAccesCompte);
 		chZoomIn = (ImageButton) findViewById(R.id.zoom_in);
 		chZoomOut = (ImageButton) findViewById(R.id.zoom_out);
@@ -110,7 +123,9 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 		chPoints = new ArrayList<>();
 
 		/* Ajout des listener aux widgets */
-        chSwitch.setOnCheckedChangeListener(this);
+        //chSwitch.setOnCheckedChangeListener(this);
+		trackMe.setOnClickListener(this);
+		untrackMe.setOnClickListener(this);
         zone_acces_compte.setOnClickListener(this);
 		chZoomIn.setOnClickListener(this);
 		chZoomOut.setOnClickListener(this);
@@ -132,6 +147,76 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
             startActivity(intent);
         }
 
+		else if (v.getId() == R.id.track_me)
+		{
+			String message;
+			if (tracking)
+			{
+				message = "Le tracking est déjà activé, allez y courez !";
+			}
+			//Le tracking n'etait pas déjà activé
+			else
+			{
+				LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+				//Le GPS n'est pas activé
+				if (!manager.isProviderEnabled( LocationManager.GPS_PROVIDER ))
+				{
+					message = "Le GPS ne semble pas activé, activer le, cela vous evitera une facture salée à la fin du mois !";
+				}
+				//Le GPS est activé
+				else
+				{
+					//verification de la permission d'accès aux données GPS
+					if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+					{
+						message = "Activation du tracking";
+						tracking = true;
+						chGoogleApiClient.connect();
+						try
+						{
+							String text = "Jason";
+							FileOutputStream chOutput = openFileOutput(chNomFichier, Context.MODE_APPEND);
+							chOutput.write(text.getBytes());
+							text = "\nStatham";
+							chOutput.write(text.getBytes());
+						}
+						catch (Exception e)
+						{
+							Log.e("Pb creation fichier", e.getMessage());
+						}
+					}
+					else
+					{
+						message = "L'application n'a pas l'autorisation d'accèder au GPS de votre appareil";
+						Log.e("erreur", "Impossiblité de récupérer les données");
+					}
+				}
+			}
+			Toast messageTemporaire;
+			messageTemporaire = Toast.makeText(ActivityLocalisation.this, message, Toast.LENGTH_LONG);
+			messageTemporaire.show();
+		}
+
+		else if (v.getId() == R.id.untrack_me)
+		{
+			String message;
+			//Le tracking est déjà désactivé
+			if (!tracking)
+			{
+				message = "Voyons le tracking est déjà désactivé mon ami";
+			}
+			else
+			{
+				tracking = false;
+				afficherFichier();
+				message = "Désactivation du tracking";
+			}
+			Toast messageTemporaire;
+			messageTemporaire = Toast.makeText(ActivityLocalisation.this, message, Toast.LENGTH_LONG);
+			messageTemporaire.show();
+			chGoogleApiClient.disconnect();
+		}
+
 		else if (v.getId() == R.id.zoom_in)		//agrandissement
 		{
 			chController.zoomIn();
@@ -141,39 +226,6 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 		{
 			chController.zoomOut();
 		}
-    }
-
-	/**
-	 * Méthode permettant de gérer les changements d'état des objets de la classe switch de l'interface graphique.
-	 * @param buttonView Le switch sur lequel a appuyé l'utilisateur.
-	 * @param isChecked L'etat du switch après le clique.
-	 */
-    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
-    {
-        Toast messageTemporaire;
-		String message;
-		if(isChecked)
-		{
-			//verification de la permission d'accès aux données GPS
-			if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-			{
-				message = "Activation du tracking";
-				chFichier = new File(this.getFilesDir(), chNomFichier);
-				chGoogleApiClient.connect();
-			}
-			else
-			{
-				message = "L'application n'a pas l'autorisation d'accèder au GPS de votre appareil";
-				Log.e("erreur", "Impossiblité de récupérer les données");
-			}
-		}
-        else
-		{
-			message = "Désactivation du tracking";
-			chGoogleApiClient.disconnect();
-		}
-		messageTemporaire = Toast.makeText(ActivityLocalisation.this, message, Toast.LENGTH_SHORT);
-		messageTemporaire.show();
     }
 
 	/**
@@ -205,12 +257,6 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	@Override
 	public void onConnected(Bundle bundle)
 	{
-		Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(chGoogleApiClient);
-		if (lastLocation != null)
-		{
-			GeoPoint point = new GeoPoint(lastLocation);
-			updateMap(point);
-		}
 		chLocationRequest = LocationRequest.create();		//Requête de relevé de données GPS
 		chLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);	//On fixe la priorité pour le relevé
 		chLocationRequest.setInterval(60000); // Mise à jour de la position toutes les 60 secondes
@@ -256,6 +302,8 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	{
 		super.onDestroy();
 		chGoogleApiClient.disconnect();
+		BaseDeDonnees.deconnexionBD();
+		Log.d("Deco", "Déconnection");
 	}
 
 	/**
@@ -289,5 +337,33 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	public boolean onItemLongPress(int index, Object item)
 	{
 		return false;
+	}
+
+	public void afficherFichier()
+	{
+		try {
+			InputStream inputStream = openFileInput(chNomFichier);
+			if ( inputStream != null )
+			{
+				InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+				BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+				String receiveString = "";
+				StringBuilder stringBuilder = new StringBuilder();
+
+				while ( (receiveString = bufferedReader.readLine()) != null )
+				{
+					Log.d("ligne", "Nouvelle ligne");
+					stringBuilder.append(receiveString);
+				}
+
+				inputStream.close();
+				Log.d("Contenu fichier", stringBuilder.toString());
+			}
+		}
+		catch (FileNotFoundException e) {
+			Log.e("login activity", "File not found: " + e.toString());
+		} catch (IOException e) {
+			Log.e("login activity", "Can not read file: " + e.toString());
+		}
 	}
 }
