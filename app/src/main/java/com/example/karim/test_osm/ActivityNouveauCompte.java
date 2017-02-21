@@ -50,24 +50,26 @@ public class ActivityNouveauCompte extends AppCompatActivity implements View.OnC
     }
 
 	/**
-	 * Méthode de gestion des cliques utilisateurs. Elle permet de gérer la demande de création de compte de l'utilisateur
-	 * @param v Le composant graphique sur lequel l'utilisateur a cliqué.
+	 * Called when a view has been clicked.
+	 *
+	 * @param v The view that was clicked.
 	 */
-    public void onClick(View v)
-    {
-        if(v.getId() == boutonCreate.getId())
-        {
+	@Override
+	public void onClick(View v)
+	{
+		if(v.getId() == boutonCreate.getId())
+		{
 			final Toast messageTemporaire;	//message temporaire s'affichant en bas de l'ecran
 			AlertDialog.Builder message = new AlertDialog.Builder(ActivityNouveauCompte.this);	//message ne s'effancant que une fois l'action finie ou s'il y a une erreur
 
 			TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
 			final String IMEI = telephonyManager.getDeviceId();
 			final Activity myActivity = this;
-            final String login = zoneLogin.getText().toString();
-            final String mdp1 = zoneMdp1.getText().toString();
-            final String mdp2 = zoneMdp2.getText().toString();
-            final String ville = zoneVille.getText().toString();
-            final String mail = zoneMail.getText().toString();
+			final String login = zoneLogin.getText().toString();
+			final String mdp1 = zoneMdp1.getText().toString();
+			final String mdp2 = zoneMdp2.getText().toString();
+			final String ville = zoneVille.getText().toString();
+			final String mail = zoneMail.getText().toString();
 
 			if ((IMEI.equals("")) || (login.equals("")) || (mdp1.equals("")) || (mdp2.equals("")) || (ville.equals("")) || (mail.equals("")))		//Au moins un champ vide
 			{
@@ -96,7 +98,7 @@ public class ActivityNouveauCompte extends AppCompatActivity implements View.OnC
 				dialog.setCancelable(false);    //annule la suppresion de la boite de dialogue lors de retour ou d'un clique en dehord de la boite
 				dialog.show();      //ici la boite de dialogue s'affiche
 
-            	new Thread(new Runnable()
+				new Thread(new Runnable()
 				{
 					public void run()
 					{
@@ -137,6 +139,6 @@ public class ActivityNouveauCompte extends AppCompatActivity implements View.OnC
 					}
 				}).start();
 			}
-        }
-    }
+		}
+	}
 }

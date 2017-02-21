@@ -3,43 +3,55 @@ package com.example.karim.test_osm;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.gesture.GestureOverlayView;
+import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-
-import org.osmdroid.DefaultResourceProxyImpl;
-import org.osmdroid.ResourceProxy;
-import org.osmdroid.api.IGeoPoint;
+import org.osmdroid.api.IMapController;
+import org.osmdroid.bonuspack.routing.MapQuestRoadManager;
+import org.osmdroid.bonuspack.routing.OSRMRoadManager;
+import org.osmdroid.bonuspack.routing.Road;
+import org.osmdroid.bonuspack.routing.RoadManager;
+import org.osmdroid.bonuspack.routing.RoadNode;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapController;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.ItemizedIconOverlay;
+import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.OverlayItem;
+import org.osmdroid.views.overlay.PathOverlay;
+import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -48,20 +60,21 @@ import java.util.Map;
  * Elle permet aussi d'afficher certaines information sur le trajet en cours.
  */
 
-public class ActivityLocalisation extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, CompoundButton.OnCheckedChangeListener, com.google.android.gms.location.LocationListener
+public class ActivityLocalisation extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, CompoundButton.OnCheckedChangeListener, com.google.android.gms.location.LocationListener, ItemizedIconOverlay.OnItemGestureListener
 {
     private Switch chSwitch;
     private TextView zone_acces_compte;
-    private Location location;
-	private GeoPoint currentLocation;
-	private String filename = "file.txt";
-	private File fichier;
-	private GoogleApiClient googleApiClient;
-	private LocationRequest locationRequest;
+	private String chNomFichier = "position.txt";
+	private File chFichier;
+	private GoogleApiClient chGoogleApiClient;
+	private LocationRequest chLocationRequest;
 	private MapView chMap;
-	private MapController chController;
-	private MyLocationNewOverlay myLocationNewOverlay;
-	private OverlayItem overlayItem;
+	private IMapController chController;
+	private ArrayList<OverlayItem> chItems;
+	private ItemizedIconOverlay chLocationOverlay;
+	private ImageButton chZoomIn, chZoomOut;
+	private ArrayList<GeoPoint> chPoints;
+	private RoadManager roadManager;
 
 
 	/**
@@ -70,7 +83,9 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	 */
     protected void onCreate(Bundle savedInstanceState)
     {
-		com.example.karim.test_osm.Utilisateur util = getIntent().getParcelableExtra("Utilisateur");
+		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+		StrictMode.setThreadPolicy(policy);
+		Utilisateur util = getIntent().getParcelableExtra("Utilisateur");
 		Log.i("util", util.toString());
         super.onCreate(savedInstanceState);
 		super.setContentView(R.layout.test_localisation);
@@ -79,41 +94,36 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
         /* Récuperation des widgets */
         chSwitch = (Switch) findViewById(R.id.switch1);
         zone_acces_compte = (TextView) findViewById(R.id.textAccesCompte);
-		/* Création de la carte */
-		ResourceProxy resourceProxy = new DefaultResourceProxyImpl(getApplicationContext());
-		chMap = new MapView(getApplicationContext(), 256, resourceProxy);
-		chMap.setBuiltInZoomControls(true);		//affiche le bouton pour zoomer
-		chMap.setMultiTouchControls(true);		//autorise les zooms avec les doigts
-		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
-		params.addRule(RelativeLayout.BELOW, R.id.switch1);
-		params.addRule(RelativeLayout.CENTER_HORIZONTAL);
-		super.addContentView(chMap, params);
+		chZoomIn = (ImageButton) findViewById(R.id.zoom_in);
+		chZoomOut = (ImageButton) findViewById(R.id.zoom_out);
+		chMap = (MapView) findViewById(R.id.carte);
 
-		GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(this);
-		gpsMyLocationProvider.
-		myLocationNewOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(getApplicationContext()), chMap, resourceProxy);
-		myLocationNewOverlay.enableMyLocation();
-		GeoPoint gpt = new GeoPoint(48.82193150638453, 2.2615885611938893);
-		chMap.getOverlays().add(myLocationNewOverlay);
-		/*OverlayItem nouvelleItem = new OverlayItem("My Location", "My Location", gpt);
-		myLocationNewOverlay.*/
+		//Parametrage de la carte
+		chMap.setTileSource(TileSourceFactory.MAPNIK);
+		chMap.setMultiTouchControls(true);
+		chController = chMap.getController();
+		chController.setZoom(chMap.getMaxZoomLevel() - 5);
 
+		roadManager = new MapQuestRoadManager("G8hj0jdN4i6ZYDCnfK9AQLyAuCjTJb7z");
+		roadManager.addRequestOption("routeType=pedestrian");
 
-		chController = (MapController) chMap.getController();
-		chController.setZoom(20);
-		chController.setCenter(gpt);
+		chPoints = new ArrayList<>();
 
 		/* Ajout des listener aux widgets */
         chSwitch.setOnCheckedChangeListener(this);
         zone_acces_compte.setOnClickListener(this);
+		chZoomIn.setOnClickListener(this);
+		chZoomOut.setOnClickListener(this);
 
 		buildGoogleApiClient();
     }
 
 	/**
-	 * Méthode de gestion des cliques utilisateurs. Elle permet de gérer la demande de redirection vers l'activity du compte personnel de l'utilisateur.
-	 * @param v Le composant graphique sur lequel l'utilisateur a cliqué.
+	 * Called when a view has been clicked.
+	 *
+	 * @param v The view that was clicked.
 	 */
+	@Override
     public void onClick(View v)
     {
         if (v.getId() == zone_acces_compte.getId())		//L'utilisateur souhaite accèder à son compte
@@ -121,6 +131,16 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
             Intent intent = new Intent(this, ActivityCompteUtilisateur.class);
             startActivity(intent);
         }
+
+		else if (v.getId() == R.id.zoom_in)		//agrandissement
+		{
+			chController.zoomIn();
+		}
+
+		else if (v.getId() == R.id.zoom_out)		//rétrécissement
+		{
+			chController.zoomOut();
+		}
     }
 
 	/**
@@ -138,13 +158,8 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 			if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
 			{
 				message = "Activation du tracking";
-				fichier = new File(this.getFilesDir(), filename);
-				/*
-		   			Connection du téléphone au Google Play Services
-		   			En cas de succès, la méthode onConnected() est appelée
-		   			Dans le cas contraire la méthode onConnectionFailed est appelée
-		 		*/
-				googleApiClient.connect();
+				chFichier = new File(this.getFilesDir(), chNomFichier);
+				chGoogleApiClient.connect();
 			}
 			else
 			{
@@ -155,7 +170,7 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
         else
 		{
 			message = "Désactivation du tracking";
-			googleApiClient.disconnect();
+			chGoogleApiClient.disconnect();
 		}
 		messageTemporaire = Toast.makeText(ActivityLocalisation.this, message, Toast.LENGTH_SHORT);
 		messageTemporaire.show();
@@ -167,19 +182,20 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	 */
 	public void onLocationChanged(Location location)
     {
-		GeoPoint position = new GeoPoint(location);
-		String text = "Latitude :"+position.getLatitude()+" Longitude :"+position.getLongitude();
+		GeoPoint point = new GeoPoint(location);
+		updateMap(point);
+		String text = "Latitude :"+point.getLatitude()+" Longitude :"+point.getLongitude();
+		Log.d("nouvelle localisation", text);
 		FileOutputStream output;
 		try		//ecriture dans le fichier
 		{
-			output = openFileOutput(filename, Context.MODE_PRIVATE);
+			output = openFileOutput(chNomFichier, Context.MODE_PRIVATE);
 			output.write(text.getBytes());
 		}
 		catch(Exception e)
 		{
 			Log.e("Error", e.getMessage());
 		}
-		Log.d("Nouvelle Localisation", text);
     }
 
 	/**
@@ -189,19 +205,17 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	@Override
 	public void onConnected(Bundle bundle)
 	{
-		locationRequest = LocationRequest.create();		//Requête de relevé de données GPS
-		locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);	//On fixe la priorité pour le relevé
-		locationRequest.setInterval(10000); // Mise à jour de la position toutes les secondes
-
-		LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);		//Demande de reception régulière de données GPS
-
-		location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);		//on cherche à obtenir une données GPS si celle-ci existe
-		if (location != null)
+		Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(chGoogleApiClient);
+		if (lastLocation != null)
 		{
-			currentLocation = new GeoPoint(location);
-			String text = "Latitude :"+currentLocation.getLatitude()+" Longitude :"+currentLocation.getLongitude();
-			Log.d("1er loc", text);
+			GeoPoint point = new GeoPoint(lastLocation);
+			updateMap(point);
 		}
+		chLocationRequest = LocationRequest.create();		//Requête de relevé de données GPS
+		chLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);	//On fixe la priorité pour le relevé
+		chLocationRequest.setInterval(60000); // Mise à jour de la position toutes les 60 secondes
+
+		LocationServices.FusedLocationApi.requestLocationUpdates(chGoogleApiClient, chLocationRequest, this);		//Demande de reception régulière de données GPS
 	}
 
 	/**
@@ -227,7 +241,7 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	 */
 	synchronized void buildGoogleApiClient()
 	{
-		googleApiClient = new GoogleApiClient.Builder(this)
+		chGoogleApiClient = new GoogleApiClient.Builder(this)
 				.addConnectionCallbacks(this)
 				.addOnConnectionFailedListener(this)
 				.addApi(LocationServices.API)
@@ -241,6 +255,39 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	protected void onDestroy()
 	{
 		super.onDestroy();
-		googleApiClient.disconnect();
+		chGoogleApiClient.disconnect();
+	}
+
+	/**
+	 * Met à jour la carte
+	 * @param point Le nouveau point qu'il faut ajouter à la carte
+	 */
+	private void updateMap(GeoPoint point)
+	{
+		//Ajout du point à la carte
+		chPoints.add(point);
+		Road road = roadManager.getRoad(chPoints);
+		Polyline roadOverlay = RoadManager.buildRoadOverlay(road);
+		chMap.getOverlays().add(roadOverlay);	//On ajoute la route
+		chController.setCenter(point);
+
+		//On place un marker sur la carte
+		Marker nodeMarker = new Marker(chMap);
+		nodeMarker.setPosition(point);
+		nodeMarker.setTitle("etape "+chPoints.size());
+		chMap.getOverlays().add(nodeMarker);
+		chMap.invalidate();
+	}
+
+	@Override
+	public boolean onItemSingleTapUp(int index, Object item)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean onItemLongPress(int index, Object item)
+	{
+		return false;
 	}
 }
