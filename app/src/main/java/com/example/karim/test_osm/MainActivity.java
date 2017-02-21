@@ -47,10 +47,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 	/**
-	 * Méthode de gestion des cliques utilisateurs.
-	 * Elle permet de gérer soit une demande de connexion de l'utilisateur avec un login et un mot de passe, une demande de connexion anonyme ou alors une demande de redirection vers l'activity de création dompte
-	 * @param v Le composant graphique sur lequel l'utilisateur a cliqué.
+	 * Called when a view has been clicked.
+	 *
+	 * @param v The view that was clicked.
 	 */
+	@Override
     public void onClick(View v)
     {
         if (v.getId() == connexion.getId())
