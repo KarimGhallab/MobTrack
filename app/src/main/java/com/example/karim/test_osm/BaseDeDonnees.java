@@ -125,13 +125,7 @@ public abstract class BaseDeDonnees
 		try
 		{
 			String sql = "select count(*) from (select * from utilisateur where pseudo = '" + parLogin + "' and pass = '" + parMotDePasse + "') as resultat;";
-			ResultSet rs = chStmt.executeQuery(sql);
-			rs.next();
-			int nb_resultat = rs.getInt(1);    //obtention du nombre de ligne retourné par la requete
-			if (nb_resultat == 1)	//Le couple login/mot de passe existe dans la base de données
-				return true;
-			else
-				return false;
+			Refjjflsjlfs
 		}
 		catch(Exception excep)
 		{
