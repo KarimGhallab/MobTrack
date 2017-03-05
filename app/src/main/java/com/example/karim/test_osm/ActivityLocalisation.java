@@ -1,5 +1,6 @@
 package com.example.karim.test_osm;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -61,6 +62,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 /**
  * Classe ActivityLocalisation, elle classe représente une activty de notre application dans laquelle l'utilisateur peut demander
@@ -70,7 +73,11 @@ import java.util.Map;
 
 public class ActivityLocalisation extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener, ItemizedIconOverlay.OnItemGestureListener
 {
-    //private Switch chSwitch;
+	private final int MIL_SEC_INTERALLE = 1000;
+	private Utilisateur util;
+	private int chIdParcours;
+	private double chDistanceTotale = 0;
+	private GeoPoint chPointPrecedent;
 	private Button trackMe, untrackMe;
     private TextView zone_acces_compte;
 	private String chNomFichier = "position.txt";
@@ -94,22 +101,21 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	 */
     protected void onCreate(Bundle savedInstanceState)
     {
-		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-		StrictMode.setThreadPolicy(policy);
-		Utilisateur util = getIntent().getParcelableExtra("Utilisateur");
-		Log.i("util", util.toString());
+		util = getIntent().getParcelableExtra("Utilisateur");
+
         super.onCreate(savedInstanceState);
 		super.setContentView(R.layout.test_localisation);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         /* Récuperation des widgets */
-        //chSwitch = (Switch) findViewById(R.id.switch1);
 		trackMe = (Button) findViewById(R.id.track_me);
 		untrackMe = (Button) findViewById(R.id.untrack_me);
         zone_acces_compte = (TextView) findViewById(R.id.textAccesCompte);
 		chZoomIn = (ImageButton) findViewById(R.id.zoom_in);
 		chZoomOut = (ImageButton) findViewById(R.id.zoom_out);
 		chMap = (MapView) findViewById(R.id.carte);
+
+		desactiverBouton(R.id.untrack_me);
 
 		//Parametrage de la carte
 		chMap.setTileSource(TileSourceFactory.MAPNIK);
@@ -172,7 +178,10 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 						message = "Activation du tracking";
 						tracking = true;
 						chGoogleApiClient.connect();
-						try
+						new Thread(insererNouveauParcours(util.getID(), this)).start();
+
+						//TODO gestion des fichiers
+						/*try
 						{
 							String text = "Jason";
 							FileOutputStream chOutput = openFileOutput(chNomFichier, Context.MODE_APPEND);
@@ -183,7 +192,7 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 						catch (Exception e)
 						{
 							Log.e("Pb creation fichier", e.getMessage());
-						}
+						}*/
 					}
 					else
 					{
@@ -208,6 +217,9 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 			else
 			{
 				tracking = false;
+				desactiverBouton(R.id.untrack_me);
+
+				activerBouton(R.id.track_me);
 				afficherFichier();
 				message = "Désactivation du tracking";
 			}
@@ -234,19 +246,39 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	 */
 	public void onLocationChanged(Location location)
     {
-		GeoPoint point = new GeoPoint(location);
-		updateMap(point);
-		String text = "Latitude :"+point.getLatitude()+" Longitude :"+point.getLongitude();
-		Log.d("nouvelle localisation", text);
-		FileOutputStream output;
-		try		//ecriture dans le fichier
+		if (chIdParcours != 0)
 		{
-			output = openFileOutput(chNomFichier, Context.MODE_PRIVATE);
-			output.write(text.getBytes());
-		}
-		catch(Exception e)
-		{
-			Log.e("Error", e.getMessage());
+			GeoPoint point = new GeoPoint(location);
+			double latitude = point.getLatitude();
+			double longitude = point.getLongitude();
+
+			updateMap(point);
+			String text = "Latitude :"+point.getLatitude()+" Longitude :"+point.getLongitude();
+			FileOutputStream output;
+			try
+			{
+				//Envoi des données
+				//Le premier point du parcours
+				if (chPointPrecedent == null)
+				{
+					new Thread(envoiLocalisation(chIdParcours, latitude, longitude, 0)).start();
+				}
+				else
+				{
+					double distance = chPointPrecedent.distanceTo(point);
+					chDistanceTotale += distance;
+					new Thread(envoiLocalisation(chIdParcours, latitude, longitude, 0)).start();
+					chPointPrecedent = point;
+				}
+
+				//Fichier
+				output = openFileOutput(chNomFichier, Context.MODE_PRIVATE);
+				output.write(text.getBytes());
+			}
+			catch(Exception e)
+			{
+				Log.e("Error", e.getMessage());
+			}
 		}
     }
 
@@ -259,7 +291,7 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	{
 		chLocationRequest = LocationRequest.create();		//Requête de relevé de données GPS
 		chLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);	//On fixe la priorité pour le relevé
-		chLocationRequest.setInterval(60000); // Mise à jour de la position toutes les 60 secondes
+		chLocationRequest.setInterval(MIL_SEC_INTERALLE); // Mise à jour de la position toutes les 60 secondes
 
 		LocationServices.FusedLocationApi.requestLocationUpdates(chGoogleApiClient, chLocationRequest, this);		//Demande de reception régulière de données GPS
 	}
@@ -300,10 +332,10 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	@Override
 	protected void onDestroy()
 	{
-		super.onDestroy();
 		chGoogleApiClient.disconnect();
 		BaseDeDonnees.deconnexionBD();
 		Log.d("Deco", "Déconnection");
+		super.onDestroy();
 	}
 
 	/**
@@ -314,9 +346,9 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	{
 		//Ajout du point à la carte
 		chPoints.add(point);
-		Road road = roadManager.getRoad(chPoints);
-		Polyline roadOverlay = RoadManager.buildRoadOverlay(road);
-		chMap.getOverlays().add(roadOverlay);	//On ajoute la route
+
+		new Thread(calculerRoute()).start();
+
 		chController.setCenter(point);
 
 		//On place un marker sur la carte
@@ -325,6 +357,105 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 		nodeMarker.setTitle("etape "+chPoints.size());
 		chMap.getOverlays().add(nodeMarker);
 		chMap.invalidate();
+	}
+
+	/**
+	 * Crée un flot d'éxécution afin d'insérer un nouveau parcours dans la BD
+	 * @param chIDUser L'id de l'utilisateur souhaitant créer un parcours.
+	 * @param context Le context de l'interface (nécéssaire pour afficher des messages à l'utilisateur).
+	 * @return Un flot d'éxécution insérant un nouveau parcours.
+	 */
+	private Runnable insererNouveauParcours(final int chIDUser, final Activity context)
+	{
+		Runnable r = new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				Log.d("Thread", "Dans le nouveau Thread");
+				context.runOnUiThread(new Runnable() {
+					@Override
+					public void run()
+					{
+						Log.d("Thread", "Désactivation du bouton dans le nouveau Thread");
+						desactiverBouton(R.id.track_me);
+					}
+				});
+				int res = BaseDeDonnees.insererNouveauParcours(chIDUser);
+				//L'insertion du nouveau parcours ne s'est pas bien déroulé
+				if (res == -1)
+				{
+					context.runOnUiThread(new Runnable()
+					{
+						@Override
+						public void run()
+						{
+							Toast message = Toast.makeText(context, "Nous n'avons pas reussi à créer votre parcours...", Toast.LENGTH_LONG);
+							message.show();
+							activerBouton(R.id.track_me);
+						}
+					});
+				}
+				else
+				{
+					chIdParcours = res;
+					Log.d("ID parcours", ""+chIdParcours);
+					context.runOnUiThread(new Runnable()
+					{
+						@Override
+						public void run()
+						{
+							activerBouton(R.id.untrack_me);
+						}
+					});
+				}
+			}
+		};
+		return r;
+	}
+
+
+	//INSERT INTO localisations (idparcours, latitude, longitude, distance) VALUES (idparcours, latitude, longitude, distance)
+	private Runnable envoiLocalisation(final int parIdParcours, final double parLatitude, final double parLongitude, final double parDistance)
+	{
+		Runnable r = new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				//TODO Gérer les possibles erreurs liées au réseau et la gestion du fichier
+				boolean res = BaseDeDonnees.insererNouvelleLocalisation(parIdParcours, parLatitude, parLongitude, parDistance);
+			}
+		};
+		return r;
+	}
+
+	private void activerBouton(int parIdBouton)
+	{
+		if (parIdBouton == R.id.track_me)
+		{
+			trackMe.setAlpha(1);
+			trackMe.setEnabled(true);
+		}
+		else if (parIdBouton == R.id.untrack_me)
+		{
+			untrackMe.setAlpha(1);
+			untrackMe.setEnabled(true);
+		}
+	}
+
+	private void desactiverBouton(int parIdBouton)
+	{
+		if (parIdBouton == R.id.track_me)
+		{
+			trackMe.setAlpha(.5f);
+			trackMe.setEnabled(false);
+		}
+		else if (parIdBouton == R.id.untrack_me)
+		{
+			untrackMe.setAlpha(0.5f);
+			untrackMe.setEnabled(false);
+		}
 	}
 
 	@Override
@@ -365,5 +496,19 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 		} catch (IOException e) {
 			Log.e("login activity", "Can not read file: " + e.toString());
 		}
+	}
+
+	private Runnable calculerRoute()
+	{
+		Runnable r = new Runnable() {
+			@Override
+			public void run()
+			{
+				Road road = roadManager.getRoad(chPoints);		//Obtention de la route
+				Polyline roadOverlay = RoadManager.buildRoadOverlay(road);
+				chMap.getOverlays().add(roadOverlay);	//On ajoute la route
+			}
+		};
+		return r;
 	}
 }

@@ -8,6 +8,7 @@ import android.util.Log;
 import java.io.File;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Connection;
 
@@ -28,8 +29,6 @@ public abstract class BaseDeDonnees
 	 */
 	public static boolean connexionBD()
     {
-		/*StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-		StrictMode.setThreadPolicy(policy);*/
 		try
 		{
 			Class.forName("com.mysql.jdbc.Driver");		//chargement du driver
@@ -49,6 +48,7 @@ public abstract class BaseDeDonnees
 	 * @param parNouveauLogin Le nouveau login souhaité par l'utilisateur.
 	 * @return true si la modification s'est bien déroulée, false dans le cas contraire.
 	 */
+
 	public static boolean modifierLogin(String parLoginUtilisateur, String parNouveauLogin)
 	{
 		return true;
@@ -164,6 +164,7 @@ public abstract class BaseDeDonnees
 		else
 			return new Utilisateur(parLogin, ville, mail, id);
 	}
+
 	/**
 	 * Méthode statique de réception de l'id de l'utilisateur dans la base de données.
 	 * @param parLogin Le login de l'utilisateur.
@@ -227,21 +228,49 @@ public abstract class BaseDeDonnees
 	/**
 	 * Méthode statique d'insertion d'un nouveau parcours dans la base de données pour un utilisateur.
 	 * @param parIdUser L'id de l'utilisateur dans la base de données.
-	 * @return true si l'insertion s'est bien déroulée, false dans la cas contraire.
+	 * @return L'id du parcours qui est créé, -1 s'il y a eu une erreur.
 	 */
-	public static boolean insererNouveauParcours(int parIdUser)
+	public static int insererNouveauParcours(int parIdUser)
 	{
-		return true;
+		try
+		{
+			//INSERT INTO parcours(idutilisateur) VALUES(idutilisateur)
+			String sql = "INSERT INTO parcours(idutilisateur) VALUES ('"+parIdUser+"');";
+			chStmt.executeUpdate(sql);
+			Log.d("Insertion SQL", sql);
+			return BaseDeDonnees.getIdParcoursActuel(parIdUser);
+		}
+		catch (Exception e)
+		{
+			Log.e("insertion parcours", e.getMessage());
+			return -1;
+		}
 	}
 
 	/**
 	 * Méthode statique renvoyant le numero du parcours actuellement effectué par l'utilisateur.
 	 * @param parIdUser L'Id de l'utilisateur dans la base de données.
-	 * @return L'id du parcours que réalise l'utilisateur.
+	 * @return L'id du parcours que réalise l'utilisateur, -1 s'il y a une erreur.
 	 */
 	public static int getIdParcoursActuel(int parIdUser)
 	{
-		return 0;
+		//SELECT idparcours FROM parcours p1 WHERE idutilisateur=idutilisateur
+		//AND
+		//date IN (SELECT max(date) FROM parcours p2 WHERE p2.utilisateur=idutilisateur)
+		try
+		{
+			Log.d("connexion ?", ""+chConn.isClosed());
+			String sql = "SELECT idparcours FROM parcours p1 WHERE idutilisateur='"+parIdUser+"' and date in (SELECT max(date) FROM parcours p2 WHERE p2.idutilisateur='"+parIdUser+"')";
+			ResultSet rs = chStmt.executeQuery(sql);
+			rs.next();
+			int idParcours = rs.getInt(1);    //Obtention de l'id du nouveau parcours
+			return idParcours;
+		}
+		catch (Exception e)
+		{
+			Log.e("Erreur id parcours", e.getMessage());
+			return -1;
+		}
 	}
 
 	/**
@@ -252,9 +281,20 @@ public abstract class BaseDeDonnees
 	 * @param parDistance La distance avec la précédente localisation.
 	 * @return true si l'insertion s'est bien déroulé, false dans la cas contraire.
 	 */
-	public static boolean insererNouvelleLocalisation(int parIdParcours, double parLatitude, double parLongitude, int parDistance)
+	public static boolean insererNouvelleLocalisation(int parIdParcours, double parLatitude, double parLongitude, double parDistance)
 	{
-		return true;
+		//INSERT INTO localisations (idparcours, latitude, longitude, distance) VALUES (idparcours, latitude, longitude, distance)
+		try
+		{
+			String sql = "INSERT INTO localisations (idparcours, latitude, longitude, distance) VALUES ('"+parIdParcours+"', '"+parLatitude+"', '"+parLongitude+"', '"+parDistance+"');";
+			chStmt.executeUpdate(sql);
+			return true;
+		}
+		catch (Exception e)
+		{
+			Log.e("nouvelle loc", e.getMessage());
+			return false;
+		}
 	}
 
 	/**
@@ -274,7 +314,17 @@ public abstract class BaseDeDonnees
 	 */
 	public static boolean deconnexionBD()
 	{
-		return true;
+		try
+		{
+			chConn.close();
+			Log.d("Déco", "Déconnection de la base de données");
+			return true;
+		}
+		catch (SQLException e)
+		{
+			Log.e("Erreur déco", e.getMessage());
+			return false;
+		}
 	}
 
 	/**

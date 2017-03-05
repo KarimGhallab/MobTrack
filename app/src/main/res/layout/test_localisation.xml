@@ -9,7 +9,7 @@
     tools:context="com.example.karim.test_osm.MainActivity">
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="120dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
         android:id="@+id/track_me"
@@ -17,7 +17,7 @@
         android:background="@android:color/holo_green_dark"/>
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="120dp"
         android:layout_height="wrap_content"
         android:layout_marginRight="20dp"
         android:layout_alignParentRight="true"
