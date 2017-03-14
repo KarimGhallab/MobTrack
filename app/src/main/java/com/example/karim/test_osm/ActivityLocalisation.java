@@ -14,15 +14,20 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -71,9 +76,18 @@ import java.util.logging.LogRecord;
  * Elle permet aussi d'afficher certaines information sur le trajet en cours.
  */
 
-public class ActivityLocalisation extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener, ItemizedIconOverlay.OnItemGestureListener
+public class ActivityLocalisation extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener, ItemizedIconOverlay.OnItemGestureListener, AdapterView.OnItemClickListener
 {
-	private final int MIL_SEC_INTERALLE = 1000;
+	//Le panel de navigation
+	private final String TITRE_TRAJET = "Mes trajets";
+	private final String TITRE_COMPTE = "Mon compte";
+	private final String TITRE_DECO = "Déconnexion";
+	private String[] titresPanelNavigation = {TITRE_TRAJET, TITRE_COMPTE, TITRE_DECO};
+	private DrawerLayout chDrawerLayout;
+	private ListView chDrawerList;
+	private ActionBarDrawerToggle chDrawerToggle;
+
+	private final int MIL_SEC_INTERALLE = 6000;		//60 secondes
 	private Utilisateur util;
 	private int chIdParcours;
 	private double chDistanceTotale = 0;
@@ -94,7 +108,6 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	private RoadManager roadManager;
 	private boolean tracking = false;
 
-
 	/**
 	 * Méthode de création de l'activity.
 	 * @param savedInstanceState L'etat de l'instance précédente.
@@ -105,7 +118,18 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 
         super.onCreate(savedInstanceState);
 		super.setContentView(R.layout.test_localisation);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		getSupportActionBar().setHomeButtonEnabled(true);
+
+		/* Le panel de gauche */
+		chDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_localisation);
+		chDrawerList = (ListView) findViewById(R.id.left_drawer);
+
+		chDrawerList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, titresPanelNavigation));
+		chDrawerList.setOnItemClickListener(this);
+
+		this.setupDrawer();
+
 
         /* Récuperation des widgets */
 		trackMe = (Button) findViewById(R.id.track_me);
@@ -456,6 +480,69 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 			untrackMe.setAlpha(0.5f);
 			untrackMe.setEnabled(false);
 		}
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+	{
+		Intent intent;
+		switch(titresPanelNavigation[position])
+		{
+			case TITRE_TRAJET:
+				Log.d("panel", util.toString());
+				intent = new Intent(ActivityLocalisation.this, ActivityTrajet.class);
+				intent.putExtra("utilisateur", util);
+				startActivity(intent);
+				break;
+
+			case TITRE_COMPTE:
+				Log.d("panel", TITRE_COMPTE);
+				intent = new Intent(this, ActivityCompteUtilisateur.class);
+				intent.putExtra("utilisateur", util);
+				startActivity(intent);
+				break;
+
+			case TITRE_DECO:
+				intent = new Intent(this, MainActivity.class);
+				BaseDeDonnees.deconnexionBD();
+				startActivity(intent);
+				break;
+		}
+	}
+
+	private void setupDrawer()
+	{
+		chDrawerToggle = new ActionBarDrawerToggle(this, chDrawerLayout, R.string.drawer_open, R.string.drawer_close)
+		{
+			/** Called when a drawer has settled in a completely open state. */
+			public void onDrawerOpened(View drawerView)
+			{
+				super.onDrawerOpened(drawerView);
+				chDrawerToggle.syncState();
+				invalidateOptionsMenu();
+			}
+
+			/** Called when a drawer has settled in a completely closed state. */
+			public void onDrawerClosed(View drawerView)
+			{
+				super.onDrawerOpened(drawerView);
+				chDrawerToggle.syncState();
+				invalidateOptionsMenu();
+			}
+		};
+		chDrawerToggle.setDrawerIndicatorEnabled(true);
+		chDrawerLayout.setDrawerListener(chDrawerToggle);
+		chDrawerToggle.syncState();
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		if (chDrawerToggle.onOptionsItemSelected(item))
+		{
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	@Override

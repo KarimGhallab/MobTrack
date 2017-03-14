@@ -11,6 +11,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Connection;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
 
 /** Classe Abstraite permettant toutes les interactions avec la base de données.
  */
@@ -94,6 +97,8 @@ public abstract class BaseDeDonnees
 			String sql = "INSERT INTO utilisateur(pseudo, IMEI, pass, mail, ville) VALUES ('"+parLogin+"', '"+parIMEI+"', '"+parMdp+"', '"+parMail+"', '"+parVille+"');";
 			try
 			{
+				if (BaseDeDonnees.chConn.isClosed())
+					BaseDeDonnees.connexionBD();
 				chStmt.executeUpdate(sql);
 				return 0;
 			}
@@ -124,6 +129,8 @@ public abstract class BaseDeDonnees
 	{
 		try
 		{
+			if (BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
 			String sql = "select count(*) from (select * from utilisateur where pseudo = '" + parLogin + "' and pass = '" + parMotDePasse + "') as resultat;";
 			Refjjflsjlfs
 		}
@@ -168,6 +175,9 @@ public abstract class BaseDeDonnees
 	{
 		try
 		{
+			if (BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
+
 			String sql = "SELECT id FROM utilisateur WHERE pseudo = '"+parLogin+"';";
 			ResultSet rs = chStmt.executeQuery(sql);
 			rs.next();
@@ -188,6 +198,9 @@ public abstract class BaseDeDonnees
 	{
 		try
 		{
+			if (BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
+
 			String sql = "SELECT ville FROM utilisateur WHERE pseudo = '"+parLogin+"';";
 			ResultSet rs = chStmt.executeQuery(sql);
 			rs.next();
@@ -208,6 +221,9 @@ public abstract class BaseDeDonnees
 	{
 		try
 		{
+			if (BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
+
 			String sql = "SELECT mail FROM utilisateur WHERE pseudo = '"+parLogin+"';";
 			ResultSet rs = chStmt.executeQuery(sql);
 			rs.next();
@@ -228,7 +244,8 @@ public abstract class BaseDeDonnees
 	{
 		try
 		{
-			//INSERT INTO parcours(idutilisateur) VALUES(idutilisateur)
+			if (BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
 			String sql = "INSERT INTO parcours(idutilisateur) VALUES ('"+parIdUser+"');";
 			chStmt.executeUpdate(sql);
 			Log.d("Insertion SQL", sql);
@@ -248,12 +265,10 @@ public abstract class BaseDeDonnees
 	 */
 	public static int getIdParcoursActuel(int parIdUser)
 	{
-		//SELECT idparcours FROM parcours p1 WHERE idutilisateur=idutilisateur
-		//AND
-		//date IN (SELECT max(date) FROM parcours p2 WHERE p2.utilisateur=idutilisateur)
 		try
 		{
-			Log.d("connexion ?", ""+chConn.isClosed());
+			if (BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
 			String sql = "SELECT idparcours FROM parcours p1 WHERE idutilisateur='"+parIdUser+"' and date in (SELECT max(date) FROM parcours p2 WHERE p2.idutilisateur='"+parIdUser+"')";
 			ResultSet rs = chStmt.executeQuery(sql);
 			rs.next();
@@ -280,6 +295,8 @@ public abstract class BaseDeDonnees
 		//INSERT INTO localisations (idparcours, latitude, longitude, distance) VALUES (idparcours, latitude, longitude, distance)
 		try
 		{
+			if (BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
 			String sql = "INSERT INTO localisations (idparcours, latitude, longitude, distance) VALUES ('"+parIdParcours+"', '"+parLatitude+"', '"+parLongitude+"', '"+parDistance+"');";
 			chStmt.executeUpdate(sql);
 			return true;
@@ -371,5 +388,34 @@ public abstract class BaseDeDonnees
 	public static String getIMEI(String parLogin)
 	{
 		return null;
+	}
+
+	public static HashMap getTrajets(int parIdUser)
+	{
+		try
+		{
+			if (BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
+
+			HashMap<Integer, String> trajets = new HashMap<>();
+
+			String sql = "SELECT idparcours, date FROM parcours WHERE idutilisateur = "+parIdUser+";";
+			ResultSet rs = chStmt.executeQuery(sql);
+			while(rs.next())
+			{
+				int idparcours = rs.getInt(1);
+				Timestamp date = rs.getTimestamp(2);
+				String dateFormatee = new SimpleDateFormat("EE dd MM y").format(date);
+				Log.d("Date", dateFormatee);
+
+				trajets.put(idparcours, dateFormatee);
+			}
+			return trajets;
+		}
+		catch (Exception ex)
+		{
+			Log.e("error", ex.getMessage());
+			return null;
+		}
 	}
 }

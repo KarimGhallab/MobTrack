@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView coAnonyme;
     private TextView pasDeCompte;
     private EditText zoneLogin;
-    private  EditText zoneMdp;
+    private EditText zoneMdp;
 
     /**
      * Methode de création de l'activity.

@@ -5,6 +5,10 @@
     <string name="mail">Mail:</string>
     <string name="ville">Ville:</string>
 
+    <!-- Panel de navigation -->
+    <string name="drawer_open">Ouvrir panel</string>
+    <string name="drawer_close">Fermer panel</string>
+
     <!-- Activity Accueil -->
     <string name="message_accueil">Bienvenue sur notre application !</string>
     <string name="connexion">Se connecter:</string>

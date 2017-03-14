@@ -1,68 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_main"
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_localisation"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.karim.test_osm.MainActivity">
+    android:layout_height="match_parent">
 
-    <Button
-        android:layout_width="120dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:id="@+id/track_me"
-        android:text="Track me !"
-        android:background="@android:color/holo_green_dark"/>
-
-    <Button
-        android:layout_width="120dp"
-        android:layout_height="wrap_content"
-        android:layout_marginRight="20dp"
-        android:layout_alignParentRight="true"
-        android:id="@+id/untrack_me"
-        android:text="Untrack me !"
-        android:background="@android:color/holo_orange_dark"/>
-
-    <org.osmdroid.views.MapView
-        android:id="@+id/carte"
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/activity_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/track_me"
-        android:layout_marginTop="@dimen/decalage"
-        android:layout_centerHorizontal="true"
-        tilesource="Votre parcours"/>
+        android:paddingTop="@dimen/activity_vertical_margin"
+        tools:context="com.example.karim.test_osm.MainActivity">
+
+        <Button
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:id="@+id/track_me"
+            android:text="Track me !"
+            android:background="@android:color/holo_green_dark"/>
+
+        <Button
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="20dp"
+            android:layout_alignParentRight="true"
+            android:id="@+id/untrack_me"
+            android:text="Untrack me !"
+            android:background="@android:color/holo_orange_dark"/>
+
+        <org.osmdroid.views.MapView
+            android:id="@+id/carte"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/track_me"
+            android:layout_marginTop="@dimen/decalage"
+            android:layout_centerHorizontal="true"
+            tilesource="Votre parcours"/>
 
 
-    <TextView
-        android:layout_marginLeft="@dimen/decalage"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:text="@string/accesCompte"
-        android:textColor="@color/couleurLien"
-        android:id="@+id/textAccesCompte"
-        android:layout_toEndOf="@+id/track_me"/>
+        <TextView
+            android:layout_marginLeft="@dimen/decalage"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="@string/accesCompte"
+            android:textColor="@color/couleurLien"
+            android:id="@+id/textAccesCompte"
+            android:layout_toEndOf="@+id/track_me"/>
 
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:srcCompat="@drawable/zoom_in"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="21dp"
-        android:layout_marginBottom="90dp"
-        android:id="@+id/zoom_in"
-        android:background="@null"/>
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/zoom_in"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="21dp"
+            android:layout_marginBottom="90dp"
+            android:id="@+id/zoom_in"
+            android:background="@null"/>
 
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:srcCompat="@drawable/zoom_out"
-        android:id="@+id/zoom_out"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="15dp"
-        android:layout_alignStart="@+id/zoom_in"
-        android:background="@null"/>
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/zoom_out"
+            android:id="@+id/zoom_out"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="15dp"
+            android:layout_alignStart="@+id/zoom_in"
+            android:background="@null"/>
 
-</RelativeLayout>
+    </RelativeLayout>
+
+    <ListView android:id="@+id/left_drawer"
+              android:layout_width="240dp"
+              android:layout_height="match_parent"
+              android:layout_gravity="start"
+              android:choiceMode="singleChoice"
+              android:divider="@android:color/transparent"
+              android:dividerHeight="0dp"
+              android:background="#FFFFFF"/>
+
+</android.support.v4.widget.DrawerLayout>
