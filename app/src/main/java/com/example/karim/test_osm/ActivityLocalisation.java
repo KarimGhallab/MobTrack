@@ -87,7 +87,7 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	private ListView chDrawerList;
 	private ActionBarDrawerToggle chDrawerToggle;
 
-	private final int MIL_SEC_INTERALLE = 6000;		//60 secondes
+	private final int MIL_SEC_INTERVALLE = 60000;		//60 secondes
 	private Utilisateur util;
 	private int chIdParcours;
 	private double chDistanceTotale = 0;
@@ -246,6 +246,7 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 				activerBouton(R.id.track_me);
 				afficherFichier();
 				message = "Désactivation du tracking";
+				new Thread(finirParcours(chIdParcours, chDistanceTotale)).start();
 			}
 			Toast messageTemporaire;
 			messageTemporaire = Toast.makeText(ActivityLocalisation.this, message, Toast.LENGTH_LONG);
@@ -291,7 +292,7 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 				{
 					double distance = chPointPrecedent.distanceTo(point);
 					chDistanceTotale += distance;
-					new Thread(envoiLocalisation(chIdParcours, latitude, longitude, 0)).start();
+					new Thread(envoiLocalisation(chIdParcours, latitude, longitude, distance)).start();
 					chPointPrecedent = point;
 				}
 
@@ -315,7 +316,7 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	{
 		chLocationRequest = LocationRequest.create();		//Requête de relevé de données GPS
 		chLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);	//On fixe la priorité pour le relevé
-		chLocationRequest.setInterval(MIL_SEC_INTERALLE); // Mise à jour de la position toutes les 60 secondes
+		chLocationRequest.setInterval(MIL_SEC_INTERVALLE); // Mise à jour de la position toutes les 60 secondes
 
 		LocationServices.FusedLocationApi.requestLocationUpdates(chGoogleApiClient, chLocationRequest, this);		//Demande de reception régulière de données GPS
 	}
@@ -423,7 +424,6 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 				else
 				{
 					chIdParcours = res;
-					Log.d("ID parcours", ""+chIdParcours);
 					context.runOnUiThread(new Runnable()
 					{
 						@Override
@@ -449,6 +449,20 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 			{
 				//TODO Gérer les possibles erreurs liées au réseau et la gestion du fichier
 				boolean res = BaseDeDonnees.insererNouvelleLocalisation(parIdParcours, parLatitude, parLongitude, parDistance);
+			}
+		};
+		return r;
+	}
+
+	private Runnable finirParcours(final int idParcours, final double distanceTotale)
+	{
+		Runnable r = new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				//TODO Gérer les possibles erreurs liées au réseau et la gestion du fichier
+				boolean res = BaseDeDonnees.updateDistanceTotale(idParcours, distanceTotale);
 			}
 		};
 		return r;

@@ -344,9 +344,21 @@ public abstract class BaseDeDonnees
 	 * @param parDistance La distance que l"on souhaite envoyer à la base de données.
 	 * @return true si l'insertion s'est bien déroulée, false dans le cas contraire.
 	 */
-	public static boolean updateDistanceTotale(int idParcours, int parDistance)
+	public static boolean updateDistanceTotale(int idParcours, double parDistance)
 	{
-		return true;
+		try
+		{
+			if (BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
+			String sql = "UPDATE parcours SET distance_totale = "+parDistance+";";
+			chStmt.executeUpdate(sql);
+			return true;
+		}
+		catch (Exception e)
+		{
+			Log.e("error distanceT", e.getMessage());
+			return false;
+		}
 	}
 
 	/**
