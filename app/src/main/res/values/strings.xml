@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">MobTrack</string>
-    <string name="login">Login:</string>
-    <string name="mdp">Mot de passe:</string>
-    <string name="mail">Mail:</string>
-    <string name="ville">Ville:</string>
+    <string name="login">Login : </string>
+    <string name="mdp">Mot de passe : </string>
+    <string name="mail">Mail : </string>
+    <string name="ville">Ville : </string>
 
     <!-- Panel de navigation -->
     <string name="drawer_open">Ouvrir panel</string>
@@ -35,7 +35,7 @@
     <string name="accueilCompte">Bienvenue dans votre espace personnel</string>
     <string name="editPassword"><u>Modifier votre mot de passe</u></string>
     <string name="validerModification">Valider les modifications</string>
-    <string name="distanceParcourue">Distance totale parcourue:</string>
+    <string name="distanceParcourue">Distance totale parcourue : </string>
 
     <!-- Message pour l'utilisateur -->
     <string name="co_bd">Connexion à la base de données...</string>

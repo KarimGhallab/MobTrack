@@ -28,24 +28,27 @@
             android:screenOrientation="portrait">
         </activity>
 
+        <activity android:name=".ActivityMesTrajets"
+                  android:label="Mes trajets"
+                  android:screenOrientation="portrait" >
+        </activity>
+
         <activity android:name=".ActivityTrajet"
-                  android:label="Mes trajets">
+                  android:label="Mon trajet"
+                  android:screenOrientation="portrait" >
         </activity>
 
         <activity android:name=".ActivityNouveauCompte"
             android:parentActivityName="com.example.karim.test_osm.MainActivity"
-            android:label="@string/creation_compte">
-                <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="com.example.karim.test_osm.MainActivity" />
+            android:label="@string/creation_compte"
+                  android:screenOrientation="portrait" >
         </activity>
 
         <activity android:name=".ActivityCompteUtilisateur"
             android:parentActivityName="com.example.karim.test_osm.ActivityLocalisation"
-            android:label="@string/titleCompte">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.karim.test_osm.ActivityLocalisation" />></activity>
+            android:label="@string/titleCompte"
+            android:screenOrientation="portrait">
+        </activity>
     </application>
 
 </manifest>

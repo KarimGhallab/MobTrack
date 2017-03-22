@@ -3,8 +3,9 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="decalage">10dp</dimen>
-    <dimen name="decalageHaut">10dp</dimen>
+    <dimen name="decalageHaut">15dp</dimen>
     <dimen name="widthEditText">200dp</dimen>
     <dimen name="indication_zone_de_saisie">200dp</dimen>
     <dimen name="coteImage">25dp</dimen>
+    <dimen name="tailleTexte">17dp</dimen>
 </resources>

@@ -17,6 +17,7 @@ public class Utilisateur implements Parcelable
 	private String chVille;
 	private String chMail;
 	private int chID;
+	private int estAnonyme;
 
 	/**
 	 * Constructeur d'un Utilisateur se connectant à l'application avec un login et un mot de passe.
@@ -31,6 +32,7 @@ public class Utilisateur implements Parcelable
 		chVille = parVille;
 		chMail = parMail;
 		chID = parID;
+		estAnonyme = 0;
 	}
 
 	/**
@@ -40,6 +42,7 @@ public class Utilisateur implements Parcelable
 	public Utilisateur(int parID)
 	{
 		chID = parID;
+		estAnonyme = 1;
 	}
 
 	/**
@@ -105,6 +108,11 @@ public class Utilisateur implements Parcelable
 		return chID;
 	}
 
+	public int getAnonymat()
+	{
+		return estAnonyme;
+	}
+
 	public String toString()
 	{
 		String resultat = "Login Utilsateur: "+chLogin+
@@ -128,6 +136,7 @@ public class Utilisateur implements Parcelable
 		dest.writeString(chMail);
 		dest.writeString(chVille);
 		dest.writeInt(chID);
+		dest.writeInt(estAnonyme);
 	}
 
 	private Utilisateur(android.os.Parcel in)
@@ -136,6 +145,7 @@ public class Utilisateur implements Parcelable
 		chMail = in.readString();
 		chVille = in.readString();
 		chID = in.readInt();
+		estAnonyme = in.readInt();
 	}
 
 	public static final Parcelable.Creator<Utilisateur> CREATOR = new Parcelable.Creator<Utilisateur>()

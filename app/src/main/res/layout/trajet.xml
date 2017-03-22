@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_marginTop="@dimen/activity_vertical_margin">
+
+    <org.osmdroid.views.MapView
+        android:id="@+id/carte_trajet_selectionne"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/track_me"
+        android:layout_marginTop="@dimen/decalage"
+        android:layout_centerHorizontal="true"
+        tilesource="Votre parcours"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/zoom_in"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="21dp"
+        android:layout_marginBottom="90dp"
+        android:id="@+id/zoom_in_trajet_selectionne"
+        android:background="@null"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/zoom_out"
+        android:id="@+id/zoom_out_trajet_selectionne"
+        android:layout_alignParentBottom="true"
+        android:layout_alignEnd="@+id/zoom_in_trajet_selectionne"
+        android:layout_marginBottom="15dp"
+        android:layout_alignStart="@+id/zoom_in"
+        android:background="@null"/>
+
+
+</RelativeLayout>

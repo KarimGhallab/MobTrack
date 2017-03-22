@@ -108,7 +108,6 @@ public class ActivityNouveauCompte extends AppCompatActivity implements View.OnC
 							codeErreur = BaseDeDonnees.insererUtilisateur(login, mdp1, mail, ville, IMEI);
 						else	//erreur de co avec la BD
 							codeErreur = 1;
-						Log.d("Code erreur", " Avant UI: "+codeErreur);
 						myActivity.runOnUiThread(createRunnableForUI(codeErreur));
 					}
 
@@ -140,5 +139,12 @@ public class ActivityNouveauCompte extends AppCompatActivity implements View.OnC
 				}).start();
 			}
 		}
+	}
+
+	@Override
+	protected void onDestroy()
+	{
+		BaseDeDonnees.deconnexionBD();
+		super.onDestroy();
 	}
 }

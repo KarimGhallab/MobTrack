@@ -4,32 +4,21 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.gesture.GestureOverlayView;
-import android.graphics.Color;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.StrictMode;
-import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
@@ -38,37 +27,24 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.bonuspack.routing.MapQuestRoadManager;
-import org.osmdroid.bonuspack.routing.OSRMRoadManager;
 import org.osmdroid.bonuspack.routing.Road;
 import org.osmdroid.bonuspack.routing.RoadManager;
-import org.osmdroid.bonuspack.routing.RoadNode;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.OverlayItem;
-import org.osmdroid.views.overlay.PathOverlay;
 import org.osmdroid.views.overlay.Polyline;
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 
 /**
  * Classe ActivityLocalisation, elle classe représente une activty de notre application dans laquelle l'utilisateur peut demander
@@ -114,7 +90,9 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	 */
     protected void onCreate(Bundle savedInstanceState)
     {
-		util = getIntent().getParcelableExtra("Utilisateur");
+		util = getIntent().getParcelableExtra("utilisateur");
+		Log.d("ActivityLocalisation", util.toString());
+
 
         super.onCreate(savedInstanceState);
 		super.setContentView(R.layout.test_localisation);
@@ -287,6 +265,7 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 				if (chPointPrecedent == null)
 				{
 					new Thread(envoiLocalisation(chIdParcours, latitude, longitude, 0)).start();
+					chPointPrecedent = point;
 				}
 				else
 				{
@@ -359,7 +338,6 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	{
 		chGoogleApiClient.disconnect();
 		BaseDeDonnees.deconnexionBD();
-		Log.d("Deco", "Déconnection");
 		super.onDestroy();
 	}
 
@@ -504,16 +482,20 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 		{
 			case TITRE_TRAJET:
 				Log.d("panel", util.toString());
-				intent = new Intent(ActivityLocalisation.this, ActivityTrajet.class);
+				intent = new Intent(ActivityLocalisation.this, ActivityMesTrajets.class);
 				intent.putExtra("utilisateur", util);
 				startActivity(intent);
 				break;
 
 			case TITRE_COMPTE:
-				Log.d("panel", TITRE_COMPTE);
-				intent = new Intent(this, ActivityCompteUtilisateur.class);
-				intent.putExtra("utilisateur", util);
-				startActivity(intent);
+				if (util.getAnonymat() == 0)
+				{
+					intent = new Intent(this, ActivityCompteUtilisateur.class);
+					intent.putExtra("utilisateur", util);
+					startActivity(intent);
+				}
+				else
+					Toast.makeText(getApplicationContext(), "Vous êtes connecté anonymement, vous ne pouvez donc accèder la rubrique de compte", Toast.LENGTH_LONG).show();
 				break;
 
 			case TITRE_DECO:

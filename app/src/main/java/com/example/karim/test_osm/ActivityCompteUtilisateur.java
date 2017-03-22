@@ -82,6 +82,16 @@ public class ActivityCompteUtilisateur extends AppCompatActivity implements Adap
 		this.setupDrawer();
     }
 
+<<<<<<< HEAD
+=======
+	@Override
+	protected void onDestroy()
+	{
+		BaseDeDonnees.deconnexionBD();
+		super.onDestroy();
+	}
+
+>>>>>>> 2e21b46... Gestion de la connexion anonyme + refonte de l'interface + gestion des distances
 	private void setupDrawer()
 	{
 		chDrawerToggle = new ActionBarDrawerToggle(this, chDrawerLayout, R.string.drawer_open, R.string.drawer_close)

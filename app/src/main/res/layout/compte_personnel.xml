@@ -1,74 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_trajet"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:layout_marginLeft="@dimen/decalage"
-        android:text="@string/login"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/decalageHaut"
-        android:id="@+id/textLogin" />
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin">
 
-    <TextView
-        android:layout_marginLeft="@dimen/decalage"
-        android:text="@string/ville"
-        android:layout_marginTop="@dimen/decalageHaut"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/textLogin"
-        android:id="@+id/textVille" />
+        <TextView
+            android:text="@string/login"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/decalageHaut"
+            android:id="@+id/textLogin" />
 
-    <TextView
-        android:layout_marginLeft="@dimen/decalage"
-        android:text="@string/distanceParcourue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/textVille"
-        android:layout_marginTop="@dimen/decalageHaut"
-        android:id="@+id/textDist" />
+        <ImageButton
+            android:layout_width="@dimen/coteImage"
+            android:layout_height="@dimen/coteImage"
+            android:src="@drawable/picture_edit"
+            android:layout_toEndOf="@+id/textLogin"
+            android:layout_marginLeft="@dimen/decalage"
+            android:layout_marginTop="7dp"
+            android:scaleType="fitXY"
+            android:background="@null"
+            android:id="@+id/imageButtonLogin"/>
 
-    <TextView
-        android:text="@string/editPassword"
-        android:textColor="@color/couleurLien"
-        android:layout_marginLeft="@dimen/decalage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/textDist"
-        android:layout_marginTop="@dimen/decalageHaut"
-        android:id="@+id/textUpdatePassword" />
+        <View
+            android:id="@+id/flecheLogin"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:layout_below="@id/textLogin"
+            android:background="@android:color/black" />
 
-    <ImageButton
-        android:layout_width="@dimen/coteImage"
-        android:layout_height="@dimen/coteImage"
-        android:src="@drawable/picture_edit"
-        android:layout_toEndOf="@+id/textLogin"
-        android:layout_marginLeft="@dimen/decalage"
-        android:scaleType="fitXY"
-        android:background="@null"
-        android:id="@+id/imageButton1"/>
+        <TextView
+            android:text="@string/mail"
+            android:layout_marginTop="@dimen/decalageHaut"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/flecheLogin"
+            android:id="@+id/textMail" />
 
-    <ImageButton
-        android:layout_width="@dimen/coteImage"
-        android:layout_height="@dimen/coteImage"
-        android:src="@drawable/picture_edit"
-        android:background="@null"
-        android:layout_below="@+id/textLogin"
-        android:layout_toEndOf="@+id/textVille"
-        android:layout_marginLeft="@dimen/decalage"
-        android:scaleType="fitXY"
-        android:id="@+id/imageButton2"/>
+        <ImageButton
+            android:layout_width="@dimen/coteImage"
+            android:layout_height="@dimen/coteImage"
+            android:src="@drawable/picture_edit"
+            android:background="@null"
+            android:layout_below="@+id/flecheLogin"
+            android:layout_toEndOf="@+id/textMail"
+            android:layout_marginLeft="@dimen/decalage"
+            android:layout_marginTop="7dp"
+            android:scaleType="fitXY"
+            android:id="@+id/imageButtonMail"/>
 
-    <Button
-        android:text="@string/validerModification"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/textUpdatePassword"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="20dp"
-        android:layout_marginLeft="@dimen/decalage"
-        android:id="@+id/button" />
+        <View
+            android:id="@+id/flecheMail"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:layout_below="@id/textMail"
+            android:background="@android:color/black" />
 
-</RelativeLayout>
+        <TextView
+            android:text="@string/ville"
+            android:layout_marginTop="@dimen/decalageHaut"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/flecheMail"
+            android:id="@+id/textVille" />
+
+        <ImageButton
+            android:layout_width="@dimen/coteImage"
+            android:layout_height="@dimen/coteImage"
+            android:src="@drawable/picture_edit"
+            android:background="@null"
+            android:layout_below="@+id/flecheMail"
+            android:layout_toEndOf="@+id/textVille"
+            android:layout_marginLeft="@dimen/decalage"
+            android:layout_marginTop="7dp"
+            android:scaleType="fitXY"
+            android:id="@+id/imageButtonVille"/>
+
+        <View
+            android:id="@+id/flecheVille"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:layout_below="@id/textVille"
+            android:background="@android:color/black" />
+
+        <TextView
+            android:text="@string/distanceParcourue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/flecheVille"
+            android:layout_marginTop="@dimen/decalageHaut"
+            android:id="@+id/textDist" />
+
+        <TextView
+            android:text="@string/editPassword"
+            android:textColor="@color/couleurLien"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textDist"
+            android:layout_marginTop="@dimen/decalageHaut"
+            android:id="@+id/textUpdatePassword" />
+
+    </RelativeLayout>
+
+    <ListView android:id="@+id/left_drawer_trajet"
+              android:layout_width="240dp"
+              android:layout_height="match_parent"
+              android:layout_gravity="start"
+              android:choiceMode="singleChoice"
+              android:divider="@android:color/transparent"
+              android:dividerHeight="0dp"
+              android:background="#FFFFFF"/>
+
+</android.support.v4.widget.DrawerLayout>

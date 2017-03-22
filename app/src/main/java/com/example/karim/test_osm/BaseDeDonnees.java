@@ -5,6 +5,12 @@ import android.os.CountDownTimer;
 import android.os.StrictMode;
 import android.util.Log;
 
+import com.google.android.gms.vision.barcode.Barcode;
+
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.osmdroid.util.GeoPoint;
+
 import java.io.File;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -13,6 +19,7 @@ import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /** Classe Abstraite permettant toutes les interactions avec la base de données.
@@ -20,8 +27,10 @@ import java.util.HashMap;
 
 public abstract class BaseDeDonnees
 {
-    private static Connection chConn;
-    private static Statement chStmt;
+    public static final int LOGIN_EXISTANT = -5;
+
+	private static Connection chConn = null;
+    private static Statement chStmt = null;
     private static String chUrl = "jdbc:mysql://89.234.180.47:3306/w7zgqz_mobtrack";
     private static String chUser = "w7zgqz_mobtrack";
 	private static String chPassword = "trackmob";
@@ -41,6 +50,7 @@ public abstract class BaseDeDonnees
 		}
 		catch (Exception excep)
 		{
+			Log.d("error connexion", excep.getMessage());
 			return false;	//erreur de connexion
 		}
     }
@@ -49,12 +59,29 @@ public abstract class BaseDeDonnees
 	 * Méthode statique modifiant le login de l'utilisateur dans la base de données.
 	 * @param parLoginUtilisateur Le login actuel de l'utilisateur.
 	 * @param parNouveauLogin Le nouveau login souhaité par l'utilisateur.
-	 * @return true si la modification s'est bien déroulée, false dans le cas contraire.
+	 * @return 1 si la modification s'est bien déroulée, LOGIN_DEJA_EXISTANT si le login existe déjà dans la base de données ou -1 si'il y a une autre erreur.
 	 */
 
-	public static boolean modifierLogin(String parLoginUtilisateur, String parNouveauLogin)
+	public static int modifierLogin(String parLoginUtilisateur, String parNouveauLogin)
 	{
-		return true;
+		if (BaseDeDonnees.loginExists(parNouveauLogin))
+			return BaseDeDonnees.LOGIN_EXISTANT;
+		else
+		{
+			try
+			{
+				if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
+					BaseDeDonnees.connexionBD();
+				String sql = "UPDATE utilisateur SET pseudo = '"+parNouveauLogin+"' where pseudo = '"+parLoginUtilisateur+"';";
+				chStmt.executeUpdate(sql);
+				return 1;
+			}
+			catch (Exception e)
+			{
+				Log.e("error modif login", e.getMessage());
+				return -1;
+			}
+		}
 	}
 
 	/**
@@ -65,7 +92,44 @@ public abstract class BaseDeDonnees
 	 */
 	public static boolean modifierVille(String parLoginUtilisateur, String parNouvelleVille)
 	{
-		return true;
+		try
+		{
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
+
+			String sql = "UPDATE utilisateur SET ville = '"+parNouvelleVille+"' where pseudo = '"+parLoginUtilisateur+"';";
+			chStmt.executeUpdate(sql);
+			return true;
+		}
+		catch (Exception e)
+		{
+			Log.e("error modif ville", e.getMessage());
+			return false;
+		}
+	}
+
+	/**
+	 * Méthode statique modifiant le mail de l'utilisateur dans la base de données.
+	 * @param parLoginUtilisateur Le login actuel de l'utilisateur.
+	 * @param parNouveauMail Le nouveau mail souhaité par l'utilisateur.
+	 * @return true si la modification s'est bien déroulée, false dans le cas contraire.
+	 */
+	public static boolean modifierMail(String parLoginUtilisateur, String parNouveauMail)
+	{
+		try
+		{
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
+
+			String sql = "UPDATE utilisateur SET mail = '"+parNouveauMail+"' where pseudo = '"+parLoginUtilisateur+"';";
+			chStmt.executeUpdate(sql);
+			return true;
+		}
+		catch (Exception e)
+		{
+			Log.e("error modif mail", e.getMessage());
+			return false;
+		}
 	}
 
 	/**
@@ -76,8 +140,23 @@ public abstract class BaseDeDonnees
 	 */
 	public static boolean modifierMdp(String parLoginUtilisateur, String parNouveauMotDePasse)
 	{
-		return true;
+		try
+		{
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
+
+			String mdpChiffre = BaseDeDonnees.chiffreViaSha256(parNouveauMotDePasse);
+			String sql = "UPDATE utilisateur SET pass = '"+mdpChiffre+"' where pseudo = '"+parLoginUtilisateur+"';";
+			chStmt.executeUpdate(sql);
+			return true;
+		}
+		catch (Exception e)
+		{
+			Log.e("error modif mdp", e.getMessage());
+			return false;
+		}
 	}
+
 
 	/**
 	 * Méthode statique d'insertion d'un utilisateur dans la base de données.
@@ -94,11 +173,13 @@ public abstract class BaseDeDonnees
 			return 2;
 		else
 		{
-			String sql = "INSERT INTO utilisateur(pseudo, IMEI, pass, mail, ville) VALUES ('"+parLogin+"', '"+parIMEI+"', '"+parMdp+"', '"+parMail+"', '"+parVille+"');";
+			String mdpChiffre = chiffreViaSha256(parMdp);
+			String sql = "INSERT INTO utilisateur(pseudo, IMEI, pass, mail, ville) VALUES ('"+parLogin+"', '"+parIMEI+"', '"+mdpChiffre+"', '"+parMail+"', '"+parVille+"');";
 			try
 			{
-				if (BaseDeDonnees.chConn.isClosed())
+				if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
 					BaseDeDonnees.connexionBD();
+
 				chStmt.executeUpdate(sql);
 				return 0;
 			}
@@ -116,7 +197,21 @@ public abstract class BaseDeDonnees
 	 */
 	public static boolean insererUtilisateurAnonyme(String parIMEI)
 	{
-		return true;
+		Log.d("dans BD", parIMEI);
+		String sql = "INSERT INTO utilisateur(IMEI) VALUES ('"+parIMEI+"');";
+		try
+		{
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
+
+			chStmt.executeUpdate(sql);
+			return true;
+		}
+		catch (Exception excep)
+		{
+			Log.e("error", excep.getMessage());
+			return false;
+		}
 	}
 
 	/**
@@ -129,13 +224,29 @@ public abstract class BaseDeDonnees
 	{
 		try
 		{
-			if (BaseDeDonnees.chConn.isClosed())
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
 				BaseDeDonnees.connexionBD();
+<<<<<<< HEAD
 			String sql = "select count(*) from (select * from utilisateur where pseudo = '" + parLogin + "' and pass = '" + parMotDePasse + "') as resultat;";
 			Refjjflsjlfs
+=======
+
+			String mdpChiffre = chiffreViaSha256(parMotDePasse);
+			Log.d("BD", "MDP chiffré : "+mdpChiffre);
+			String sql = "select count(*) from (select * from utilisateur where pseudo = '" + parLogin + "' and pass = '"+ mdpChiffre +"') as resultat;";
+			Log.d("BD", sql);
+			ResultSet rs = chStmt.executeQuery(sql);
+			rs.next();
+			int nb_resultat = rs.getInt(1);    //obtention du nombre de ligne retourné par la requete
+			if (nb_resultat == 1)	//Le couple login/mot de passe existe dans la base de données
+				return true;
+			else
+				return false;
+>>>>>>> 2e21b46... Gestion de la connexion anonyme + refonte de l'interface + gestion des distances
 		}
 		catch(Exception excep)
 		{
+			Log.e("error", excep.getMessage());
 			return false;
 		}
 	}
@@ -175,7 +286,7 @@ public abstract class BaseDeDonnees
 	{
 		try
 		{
-			if (BaseDeDonnees.chConn.isClosed())
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
 				BaseDeDonnees.connexionBD();
 
 			String sql = "SELECT id FROM utilisateur WHERE pseudo = '"+parLogin+"';";
@@ -189,6 +300,25 @@ public abstract class BaseDeDonnees
 		}
 	}
 
+	public static int getUserIDViaIMEI(String parIMEI)
+	{
+		try
+		{
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
+
+			String sql = "SELECT id FROM utilisateur WHERE IMEI = '"+parIMEI+"';";
+			ResultSet rs = chStmt.executeQuery(sql);
+			rs.next();
+			return rs.getInt(1);
+		}
+		catch(Exception excep)
+		{
+			Log.e("error", excep.getMessage());
+			return -1;
+		}
+	}
+
 	/**
 	 * Méthode statique de réception de la ville de l'utilisateur.
 	 * @param parLogin Le login de l'utilisateur.
@@ -198,7 +328,7 @@ public abstract class BaseDeDonnees
 	{
 		try
 		{
-			if (BaseDeDonnees.chConn.isClosed())
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
 				BaseDeDonnees.connexionBD();
 
 			String sql = "SELECT ville FROM utilisateur WHERE pseudo = '"+parLogin+"';";
@@ -221,7 +351,7 @@ public abstract class BaseDeDonnees
 	{
 		try
 		{
-			if (BaseDeDonnees.chConn.isClosed())
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
 				BaseDeDonnees.connexionBD();
 
 			String sql = "SELECT mail FROM utilisateur WHERE pseudo = '"+parLogin+"';";
@@ -244,8 +374,9 @@ public abstract class BaseDeDonnees
 	{
 		try
 		{
-			if (BaseDeDonnees.chConn.isClosed())
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
 				BaseDeDonnees.connexionBD();
+
 			String sql = "INSERT INTO parcours(idutilisateur) VALUES ('"+parIdUser+"');";
 			chStmt.executeUpdate(sql);
 			Log.d("Insertion SQL", sql);
@@ -267,8 +398,9 @@ public abstract class BaseDeDonnees
 	{
 		try
 		{
-			if (BaseDeDonnees.chConn.isClosed())
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
 				BaseDeDonnees.connexionBD();
+
 			String sql = "SELECT idparcours FROM parcours p1 WHERE idutilisateur='"+parIdUser+"' and date in (SELECT max(date) FROM parcours p2 WHERE p2.idutilisateur='"+parIdUser+"')";
 			ResultSet rs = chStmt.executeQuery(sql);
 			rs.next();
@@ -295,8 +427,9 @@ public abstract class BaseDeDonnees
 		//INSERT INTO localisations (idparcours, latitude, longitude, distance) VALUES (idparcours, latitude, longitude, distance)
 		try
 		{
-			if (BaseDeDonnees.chConn.isClosed())
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
 				BaseDeDonnees.connexionBD();
+
 			String sql = "INSERT INTO localisations (idparcours, latitude, longitude, distance) VALUES ('"+parIdParcours+"', '"+parLatitude+"', '"+parLongitude+"', '"+parDistance+"');";
 			chStmt.executeUpdate(sql);
 			return true;
@@ -327,8 +460,8 @@ public abstract class BaseDeDonnees
 	{
 		try
 		{
-			chConn.close();
-			Log.d("Déco", "Déconnection de la base de données");
+			if (chConn != null &&!chConn.isClosed())
+				chConn.close();
 			return true;
 		}
 		catch (SQLException e)
@@ -348,9 +481,10 @@ public abstract class BaseDeDonnees
 	{
 		try
 		{
-			if (BaseDeDonnees.chConn.isClosed())
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
 				BaseDeDonnees.connexionBD();
-			String sql = "UPDATE parcours SET distance_totale = "+parDistance+";";
+
+			String sql = "UPDATE parcours SET distance_totale = "+parDistance+"; where idparcours = "+idParcours+";";
 			chStmt.executeUpdate(sql);
 			return true;
 		}
@@ -370,6 +504,9 @@ public abstract class BaseDeDonnees
 	{
 		try
 		{
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
+
 			String sql = "SELECT count(*) from utilisateur where pseudo = '"+parLogin+"';";
 			ResultSet rs = chStmt.executeQuery(sql);
 			rs.next();
@@ -384,6 +521,30 @@ public abstract class BaseDeDonnees
 			return true;
 		}
 	}
+
+	public static boolean IMEIExists(String parIMEI)
+	{
+		try
+		{
+			Log.d("BD", "chConn est null : "+(chConn == null));
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
+
+			String sql = "SELECT count(*) from utilisateur where IMEI = '"+parIMEI+"';";
+			ResultSet rs = chStmt.executeQuery(sql);
+			rs.next();
+			int nbResultat = rs.getInt(1);
+			if (nbResultat >= 1 )
+				return true;
+			else
+				return false;
+		}
+		catch (Exception excep)
+		{
+			return true;
+		}
+	}
+
 
 	/* Methodes utilisées pour les tests unitaires*/
 
@@ -402,25 +563,27 @@ public abstract class BaseDeDonnees
 		return null;
 	}
 
-	public static HashMap getTrajets(int parIdUser)
+	public static ArrayList getTrajets(int parIdUser)
 	{
 		try
 		{
-			if (BaseDeDonnees.chConn.isClosed())
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
 				BaseDeDonnees.connexionBD();
 
-			HashMap<Integer, String> trajets = new HashMap<>();
+			ArrayList< ArrayList<String> > trajets = new ArrayList<>();
 
-			String sql = "SELECT idparcours, date FROM parcours WHERE idutilisateur = "+parIdUser+";";
+			String sql = "SELECT idparcours, date FROM parcours WHERE idutilisateur = "+parIdUser+" ORDER BY date DESC;";
 			ResultSet rs = chStmt.executeQuery(sql);
 			while(rs.next())
 			{
 				int idparcours = rs.getInt(1);
 				Timestamp date = rs.getTimestamp(2);
-				String dateFormatee = new SimpleDateFormat("EE dd MM y").format(date);
-				Log.d("Date", dateFormatee);
+				String dateFormatee = new SimpleDateFormat("EEEE dd MMMM HH:mm y").format(date);
 
-				trajets.put(idparcours, dateFormatee);
+				ArrayList<String> ligne = new ArrayList<>(2);
+				ligne.add(String.valueOf(idparcours));
+				ligne.add(dateFormatee);
+				trajets.add(ligne);
 			}
 			return trajets;
 		}
@@ -429,5 +592,62 @@ public abstract class BaseDeDonnees
 			Log.e("error", ex.getMessage());
 			return null;
 		}
+	}
+
+	public static ArrayList getLocalisation(int parIdParcours)
+	{
+		try
+		{
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
+
+			ArrayList <GeoPoint> localisations = new ArrayList<>();
+
+			String sql = "SELECT latitude, longitude FROM localisations WHERE idparcours = "+parIdParcours+";";
+			ResultSet rs = chStmt.executeQuery(sql);
+			while(rs.next())
+			{
+				double latitude = rs.getDouble(1);
+				double longitude = rs.getDouble(2);
+				localisations.add(new GeoPoint(latitude, longitude));
+			}
+			Log.d("BD", localisations.toString());
+			return localisations;
+		}
+		catch (Exception ex)
+		{
+			Log.e("error", ex.getMessage());
+			return null;
+		}
+	}
+
+	/**
+	 * Renvoie la distance totale parcourue par un utilisateur.
+	 * @param parIdUtilisateur L'id de l'utilisateur.
+	 * @return La distance totale parcourue par l'utilisateur. Ou -1 s'il y a eu une erreur.
+	 */
+	public static double getDistanceParcourue(int parIdUtilisateur)
+	{
+		try
+		{
+			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
+				BaseDeDonnees.connexionBD();
+
+			String sql = "SELECT sum(distance_totale) FROM parcours WHERE idutilisateur = "+parIdUtilisateur+";";
+			ResultSet rs = chStmt.executeQuery(sql);
+
+			rs.next();
+			return rs.getDouble(1);
+		}
+		catch (Exception ex)
+		{
+			Log.e("error", ex.getMessage());
+			return -1;
+		}
+	}
+
+	private static String chiffreViaSha256(String aChiffrer)
+	{
+		return new String(Hex.encodeHex(DigestUtils.sha256(aChiffrer)));
 	}
 }
