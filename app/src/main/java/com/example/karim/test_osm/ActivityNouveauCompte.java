@@ -3,8 +3,6 @@ package com.example.karim.test_osm;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.CountDownTimer;
-import android.os.StrictMode;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
@@ -13,11 +11,7 @@ import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import java.sql.*;
-import java.util.Properties;
 
 /**
  * Classe ActivityNouveauCompte, elle permet à l'utilisateur de se créer un compte sur notre application.

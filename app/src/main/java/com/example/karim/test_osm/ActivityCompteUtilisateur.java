@@ -3,34 +3,23 @@ package com.example.karim.test_osm;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
-import android.util.Base64;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import static android.R.id.input;
-import static android.R.id.message;
 
 /**
  * Classe ActivityCompteUtilisateur, elle représente l'activity du compte personnel de l'utilisateur de l'application.
@@ -81,9 +70,6 @@ public class ActivityCompteUtilisateur extends AppCompatActivity implements Adap
 
 		this.setupDrawer();
     }
-
-<<<<<<< HEAD
-=======
 	@Override
 	protected void onDestroy()
 	{
@@ -91,7 +77,6 @@ public class ActivityCompteUtilisateur extends AppCompatActivity implements Adap
 		super.onDestroy();
 	}
 
->>>>>>> 2e21b46... Gestion de la connexion anonyme + refonte de l'interface + gestion des distances
 	private void setupDrawer()
 	{
 		chDrawerToggle = new ActionBarDrawerToggle(this, chDrawerLayout, R.string.drawer_open, R.string.drawer_close)

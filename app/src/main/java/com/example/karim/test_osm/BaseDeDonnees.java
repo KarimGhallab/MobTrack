@@ -1,16 +1,9 @@
 package com.example.karim.test_osm;
 
-import android.os.AsyncTask;
-import android.os.CountDownTimer;
-import android.os.StrictMode;
 import android.util.Log;
-
-import com.google.android.gms.vision.barcode.Barcode;
-
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.osmdroid.util.GeoPoint;
-
 import java.io.File;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -20,7 +13,6 @@ import java.sql.Connection;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /** Classe Abstraite permettant toutes les interactions avec la base de données.
  */
@@ -226,11 +218,6 @@ public abstract class BaseDeDonnees
 		{
 			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
 				BaseDeDonnees.connexionBD();
-<<<<<<< HEAD
-			String sql = "select count(*) from (select * from utilisateur where pseudo = '" + parLogin + "' and pass = '" + parMotDePasse + "') as resultat;";
-			Refjjflsjlfs
-=======
-
 			String mdpChiffre = chiffreViaSha256(parMotDePasse);
 			Log.d("BD", "MDP chiffré : "+mdpChiffre);
 			String sql = "select count(*) from (select * from utilisateur where pseudo = '" + parLogin + "' and pass = '"+ mdpChiffre +"') as resultat;";
@@ -242,7 +229,6 @@ public abstract class BaseDeDonnees
 				return true;
 			else
 				return false;
->>>>>>> 2e21b46... Gestion de la connexion anonyme + refonte de l'interface + gestion des distances
 		}
 		catch(Exception excep)
 		{

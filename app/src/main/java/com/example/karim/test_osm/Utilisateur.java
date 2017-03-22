@@ -3,8 +3,6 @@ package com.example.karim.test_osm;
 
 import android.os.Parcelable;
 
-import org.parceler.Parcel;
-
 /**
  * Classe Utilisateur, elle représente l'utilisateur actuellement connecté.
  * Cet Utilisateur peut aussi bien être un utilisateur anonyme que connecté avec un login et un mot de passe.
