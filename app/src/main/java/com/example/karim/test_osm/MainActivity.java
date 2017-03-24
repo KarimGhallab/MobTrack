@@ -32,7 +32,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 	 *
 	 * @param savedInstanceState L'etat de l'instance précédente.
 	 */
-	protected void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(Bundle savedInstanceState)
+	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.accueil);
 
@@ -78,9 +79,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 						Intent intent = new Intent(MainActivity.this, ActivityLocalisation.class);
 						intent.putExtra("utilisateur", util);
 						startActivity(intent);
-					} else {
-						myActivity.runOnUiThread(new Runnable() {
-							public void run() {
+					}
+					else
+					{
+						myActivity.runOnUiThread(new Runnable()
+						{
+							public void run()
+							{
 								Toast message = Toast.makeText(MainActivity.this, R.string.erreur_co_util, Toast.LENGTH_LONG);
 								message.show();
 							}
@@ -88,7 +93,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 					}
 				}
 			}).start();
-		} else if (v.getId() == pasDeCompte.getId()) {
+		}
+		else if (v.getId() == pasDeCompte.getId())
+		{
 			Intent intent = new Intent(this, ActivityNouveauCompte.class);
 			startActivity(intent);
 		}
@@ -100,11 +107,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 			dialog.setCancelable(false);
 			dialog.setView(new ProgressBar(this));
 			dialog.show();
-			new Thread(connexionAnonyme()).start();
+			new Thread(connexionAnonyme(dialog)).start();
 		}
 	}
 
-	private Runnable connexionAnonyme()
+	private Runnable connexionAnonyme(final AlertDialog dialog)
 	{
 		final AppCompatActivity monActivity = this;
 		Runnable r = new Runnable()
@@ -126,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 						@Override
 						public void run()
 						{
+							dialog.cancel();
 							Toast.makeText(getApplicationContext(), "Erreur de connexion", Toast.LENGTH_LONG).show();
 						}
 					});
@@ -134,10 +142,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 					Utilisateur user = new Utilisateur(id);
 					Intent intent = new Intent(monActivity, ActivityLocalisation.class);
 					intent.putExtra("utilisateur", user);
+					dialog.cancel();
 					startActivity(intent);
 				}
 			}
 		};
 		return r;
+	}
+
+	@Override
+	public void onBackPressed()
+	{
+		finishAffinity();
 	}
 }
