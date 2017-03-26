@@ -470,7 +470,8 @@ public abstract class BaseDeDonnees
 			if (BaseDeDonnees.chConn == null || BaseDeDonnees.chConn.isClosed())
 				BaseDeDonnees.connexionBD();
 
-			String sql = "UPDATE parcours SET distance_totale = "+parDistance+"; where idparcours = "+idParcours+";";
+			String sql = "UPDATE parcours SET distance_totale = "+parDistance+" where idparcours = "+idParcours+";";
+			Log.d("Mise à jour sql", sql);
 			chStmt.executeUpdate(sql);
 			return true;
 		}

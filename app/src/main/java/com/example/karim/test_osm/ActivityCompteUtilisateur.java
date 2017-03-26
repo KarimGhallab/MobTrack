@@ -33,7 +33,7 @@ public class ActivityCompteUtilisateur extends AppCompatActivity implements Adap
 	private final int MODIFIER_MAIL = 2;
 	private final int MODIFIER_MDP = 3;
 
-	private final String NOUVEAU_TRAJET = "Fair un nouveau parcours";
+	private final String NOUVEAU_TRAJET = "Faire un nouveau parcours";
 	private final String MES_TRAJETS = "Mes trajets";
 	private final String TITRE_DECO = "Déconnexion";
 	private String[] titresPanelNavigation = {NOUVEAU_TRAJET, MES_TRAJETS, TITRE_DECO};

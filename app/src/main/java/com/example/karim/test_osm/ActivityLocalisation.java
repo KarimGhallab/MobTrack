@@ -34,16 +34,8 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.Marker;
-import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.Polyline;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 /**
@@ -63,22 +55,17 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	private ListView chDrawerList;
 	private ActionBarDrawerToggle chDrawerToggle;
 
-	private final int MIL_SEC_INTERVALLE = 60000;		//60 secondes
+	private final int MIL_SEC_INTERVALLE = 5000;		//05 secondes
 	private Utilisateur util;
 	private int chIdParcours;
 	private double chDistanceTotale = 0;
 	private GeoPoint chPointPrecedent;
 	private Button trackMe, untrackMe;
     private TextView zone_acces_compte;
-	private String chNomFichier = "position.txt";
-	private File chFichier;
-	private FileOutputStream chOutput;
 	private GoogleApiClient chGoogleApiClient;
 	private LocationRequest chLocationRequest;
 	private MapView chMap;
 	private IMapController chController;
-	private ArrayList<OverlayItem> chItems;
-	private ItemizedIconOverlay chLocationOverlay;
 	private ImageButton chZoomIn, chZoomOut;
 	private ArrayList<GeoPoint> chPoints;
 	private RoadManager roadManager;
@@ -107,7 +94,6 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 		chDrawerList.setOnItemClickListener(this);
 
 		this.setupDrawer();
-
 
         /* Récuperation des widgets */
 		trackMe = (Button) findViewById(R.id.track_me);
@@ -181,20 +167,6 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 						tracking = true;
 						chGoogleApiClient.connect();
 						new Thread(insererNouveauParcours(util.getID(), this)).start();
-
-						//TODO gestion des fichiers
-						/*try
-						{
-							String text = "Jason";
-							FileOutputStream chOutput = openFileOutput(chNomFichier, Context.MODE_APPEND);
-							chOutput.write(text.getBytes());
-							text = "\nStatham";
-							chOutput.write(text.getBytes());
-						}
-						catch (Exception e)
-						{
-							Log.e("Pb creation fichier", e.getMessage());
-						}*/
 					}
 					else
 					{
@@ -222,7 +194,6 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 				desactiverBouton(R.id.untrack_me);
 
 				activerBouton(R.id.track_me);
-				afficherFichier();
 				message = "Désactivation du tracking";
 				new Thread(finirParcours(chIdParcours, chDistanceTotale)).start();
 			}
@@ -256,8 +227,6 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 			double longitude = point.getLongitude();
 
 			updateMap(point);
-			String text = "Latitude :"+point.getLatitude()+" Longitude :"+point.getLongitude();
-			FileOutputStream output;
 			try
 			{
 				//Envoi des données
@@ -271,13 +240,10 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 				{
 					double distance = chPointPrecedent.distanceTo(point);
 					chDistanceTotale += distance;
+
 					new Thread(envoiLocalisation(chIdParcours, latitude, longitude, distance)).start();
 					chPointPrecedent = point;
 				}
-
-				//Fichier
-				output = openFileOutput(chNomFichier, Context.MODE_PRIVATE);
-				output.write(text.getBytes());
 			}
 			catch(Exception e)
 			{
@@ -551,34 +517,6 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	public boolean onItemLongPress(int index, Object item)
 	{
 		return false;
-	}
-
-	public void afficherFichier()
-	{
-		try {
-			InputStream inputStream = openFileInput(chNomFichier);
-			if ( inputStream != null )
-			{
-				InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-				BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-				String receiveString = "";
-				StringBuilder stringBuilder = new StringBuilder();
-
-				while ( (receiveString = bufferedReader.readLine()) != null )
-				{
-					Log.d("ligne", "Nouvelle ligne");
-					stringBuilder.append(receiveString);
-				}
-
-				inputStream.close();
-				Log.d("Contenu fichier", stringBuilder.toString());
-			}
-		}
-		catch (FileNotFoundException e) {
-			Log.e("login activity", "File not found: " + e.toString());
-		} catch (IOException e) {
-			Log.e("login activity", "Can not read file: " + e.toString());
-		}
 	}
 
 	private Runnable calculerRoute()
