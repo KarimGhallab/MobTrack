@@ -36,7 +36,7 @@ public class TestUnitaireBaseDeDonnees
 
 	//Test de la méthode getUtilisateur
 	@Test
-	public  void getUtilisateur_isCorrect()
+	public void getUtilisateur_isCorrect()
 	{
 		BaseDeDonnees.connexionBD();
 
@@ -45,6 +45,7 @@ public class TestUnitaireBaseDeDonnees
 		Utilisateur util = BaseDeDonnees.getUtilisateur(login);
 
 		boolean condition = ((util.getID() == 1) && (util.getLogin().equals("florian")) && (util.getMail().equals("florian")) && (util.getVille().equals("Meudon")));
+		System.out.print(condition);
 		assertTrue(condition);
 
 		//Test d'un utilisateur inconnu dans la base de données
@@ -84,18 +85,18 @@ public class TestUnitaireBaseDeDonnees
 	public void modifierLogin_isCorrect()
 	{
 		//Test1: Le login n'est pas déjà présent dans la BD
-		String loginActuel = "Jason Statham";
+		String loginActuel = "karim";
 		String nouveauLogin = "Arthur Bishop";
-		int idUser = 2;
-		boolean res = BaseDeDonnees.modifierLogin(loginActuel, nouveauLogin);
+		int idUser = 31;
+		int res = BaseDeDonnees.modifierLogin(loginActuel, nouveauLogin);
 		String nouveauLoginApresInsertion = BaseDeDonnees.getLogin(idUser);
-		assertTrue(res && (nouveauLoginApresInsertion == nouveauLogin));
+		assertTrue(res == 1 && (nouveauLoginApresInsertion == nouveauLogin));
 
 		//Test2: Le login est déjà présent dans la BD
 		nouveauLogin = "florian";
 		res = BaseDeDonnees.modifierLogin(loginActuel, nouveauLogin);
 		nouveauLoginApresInsertion = BaseDeDonnees.getLogin(idUser);
-		assertFalse(res && (nouveauLoginApresInsertion == nouveauLogin));
+		assertTrue(res == BaseDeDonnees.LOGIN_EXISTANT && (nouveauLoginApresInsertion != nouveauLogin));
 	}
 
 	@Test
@@ -104,11 +105,11 @@ public class TestUnitaireBaseDeDonnees
 		//Le login existe
 		BaseDeDonnees.connexionBD();
 		String login = "florian";
-		assertTrue(BaseDeDonnees.loginExists(login) == true);
+		assertTrue(BaseDeDonnees.loginExists(login));
 
 		//le login n'existe pas
 		login = "adibou";
-		assertTrue(!BaseDeDonnees.loginExists(login) == true);
+		assertFalse(!BaseDeDonnees.loginExists(login));
 
 	}
 }

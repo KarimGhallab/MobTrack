@@ -37,6 +37,7 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Classe ActivityLocalisation, elle classe représente une activty de notre application dans laquelle l'utilisateur peut demander
@@ -48,6 +49,7 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 {
 	//Le panel de navigation
 	private final String TITRE_TRAJET = "Mes trajets";
+	private final String[] messageMotivation = {"Courage !", "Je crois en toi !", "Tu peux le faire !", "Continue comme ca !", "Tu es sur la bonne route !", "Aller encore un effort !"};
 	private final String TITRE_COMPTE = "Mon compte";
 	private final String TITRE_DECO = "Déconnexion";
 	private String[] titresPanelNavigation = {TITRE_TRAJET, TITRE_COMPTE, TITRE_DECO};
@@ -323,7 +325,15 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 		//On place un marker sur la carte
 		Marker nodeMarker = new Marker(chMap);
 		nodeMarker.setPosition(point);
-		nodeMarker.setTitle("etape "+chPoints.size());
+		/* Génére un numéro aléatoire */
+		int minimum = 0;
+		int maximum = messageMotivation.length -1;
+		Random rand = new Random();
+		int indiceMessage = minimum + rand.nextInt((maximum - minimum) + 1);
+		String message = messageMotivation[indiceMessage];
+
+		nodeMarker.setTitle(message);
+
 		chMap.getOverlays().add(nodeMarker);
 		chMap.invalidate();
 	}

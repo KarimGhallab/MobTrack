@@ -1,5 +1,6 @@
 package com.example.karim.test_osm;
 
+import android.os.StrictMode;
 import android.util.Log;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -35,6 +36,8 @@ public abstract class BaseDeDonnees
     {
 		try
 		{
+			//StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().build());
+
 			Class.forName("com.mysql.jdbc.Driver");		//chargement du driver
 			chConn = DriverManager.getConnection(chUrl, chUser, chPassword);
 			chStmt = chConn.createStatement();
