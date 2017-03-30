@@ -57,7 +57,7 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 	private ListView chDrawerList;
 	private ActionBarDrawerToggle chDrawerToggle;
 
-	private final int MIL_SEC_INTERVALLE = 5000;		//05 secondes
+	private final int MIL_SEC_INTERVALLE = 60000;		//60 secondes
 	private Utilisateur util;
 	private int chIdParcours;
 	private double chDistanceTotale = 0;
@@ -119,7 +119,6 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 		chPoints = new ArrayList<>();
 
 		/* Ajout des listener aux widgets */
-        //chSwitch.setOnCheckedChangeListener(this);
 		trackMe.setOnClickListener(this);
 		untrackMe.setOnClickListener(this);
         zone_acces_compte.setOnClickListener(this);
@@ -351,12 +350,10 @@ public class ActivityLocalisation extends AppCompatActivity implements View.OnCl
 			@Override
 			public void run()
 			{
-				Log.d("Thread", "Dans le nouveau Thread");
 				context.runOnUiThread(new Runnable() {
 					@Override
 					public void run()
 					{
-						Log.d("Thread", "Désactivation du bouton dans le nouveau Thread");
 						desactiverBouton(R.id.track_me);
 					}
 				});
