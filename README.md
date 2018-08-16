@@ -1,8 +1,8 @@
 # Mobtrack
 Projet tuteuré 2016/2017
 
-Ce projet tuteuré réalisé dans le cadre de la deuxième année de DUT consiste en la réalisation d'un traceau GPS.
-Depuis une application android,  un utilisateur peut effecuter un parcours et consulter l'ensemble ses données GPS sur le site du projet.
+Ce projet tuteuré réalisé dans le cadre de la deuxième année de DUT consiste en la réalisation d'un traceur GPS.
+Depuis une application android, un utilisateur peut effécuter un parcours et consulter l'ensemble de ses données GPS sur le site du projet avec quelques statistiques (distance totale parcourue, vitesse moyenne...).
 
 ## Composants du projet
 ### Partie Serveur
