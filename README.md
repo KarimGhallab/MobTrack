@@ -17,7 +17,7 @@ Deux clients ont été réalisés dans ce projet. Le premier est un site web en 
 
 Les cartes utilisées pour afficher les différents parcours des utilisateurs nous sont fournis via l'API OpenStreetMap
 
-## Authors
+## Auteurs
 
 * **Soufiane Kanoute**
 * **Florian Prudhomme**
